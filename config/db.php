@@ -2,13 +2,14 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=yii2basic',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8',
+    'dsn' => 'mysql:host=localhost;dbname=pms',
+    'username' => 'homestead',
+    'password' => 'secret',
+    'charset' => 'utf8mb4',
+	'tablePrefix'=>'pms_',
 
     // Schema cache options (for production environment)
-    //'enableSchemaCache' => true,
-    //'schemaCacheDuration' => 60,
-    //'schemaCache' => 'cache',
+    'enableSchemaCache' => YII_ENV_PROD,
+    'schemaCacheDuration' => 60,
+    'schemaCache' => 'cache',
 ];

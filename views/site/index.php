@@ -3,51 +3,49 @@
 /* @var $this yii\web\View */
 
 $this->title = 'My Yii Application';
+function blur($gdImageResource, $blurFactor = 3)
+{
+	// blurFactor has to be an integer
+	$blurFactor = round($blurFactor);
+	$originalWidth = imagesx($gdImageResource);
+	$originalHeight = imagesy($gdImageResource);
+	$smallestWidth = ceil($originalWidth * pow(0.5, $blurFactor));
+	$smallestHeight = ceil($originalHeight * pow(0.5, $blurFactor));
+	// for the first run, the previous image is the original input
+	$prevImage = $gdImageResource;
+	$prevWidth = $originalWidth;
+	$prevHeight = $originalHeight;
+	// scale way down and gradually scale back up, blurring all the way
+	for ($i = 0; $i < $blurFactor; $i += 1) {
+		// determine dimensions of next image
+		$nextWidth = $smallestWidth * pow(2, $i);
+		$nextHeight = $smallestHeight * pow(2, $i);
+		// resize previous image to next size
+		$nextImage = imagecreatetruecolor($nextWidth, $nextHeight);
+		imagecopyresized($nextImage, $prevImage, 0, 0, 0, 0,
+			$nextWidth, $nextHeight, $prevWidth, $prevHeight);
+		// apply blur filter
+		imagefilter($nextImage, IMG_FILTER_GAUSSIAN_BLUR);
+		// now the new image becomes the previous image for the next step
+		$prevImage = $nextImage;
+		$prevWidth = $nextWidth;
+		$prevHeight = $nextHeight;
+	}
+	// scale back to original size and blur one more time
+	imagecopyresized($gdImageResource, $nextImage,
+		0, 0, 0, 0, $originalWidth, $originalHeight, $nextWidth, $nextHeight);
+	imagefilter($gdImageResource, IMG_FILTER_GAUSSIAN_BLUR);
+	// clean up
+	imagedestroy($prevImage);
+	// return result
+	return $gdImageResource;
+}
+
+$file = 'example.jpg';
+
 ?>
-<div class="site-index">
-
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
-
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
-    <div class="body-content">
-
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
-        </div>
-
-    </div>
+<div class="site-index"
+	 id="canvas-content"
+	 style="margin-top: 56px">
+	<img src="/ouput.jpg">
 </div>
