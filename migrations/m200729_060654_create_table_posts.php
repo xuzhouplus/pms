@@ -16,7 +16,7 @@ class m200729_060654_create_table_posts extends Migration
 	{
 		$tableOptions = null;
 		if ($this->db->driverName === 'mysql') {
-			$tableOptions = 'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE=InnoDB';
+			$tableOptions = 'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE=InnoDB COMMENT = "稿件"';
 		}
 		$this->createTable($this->tableName, [
 			'id' => $this->primaryKey(11),

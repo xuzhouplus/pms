@@ -7,7 +7,7 @@ $redis = require __DIR__ . '/redis.php';
 $config = [
 	'id' => 'basic',
 	'basePath' => dirname(__DIR__),
-	'bootstrap' => ['log'],
+	'bootstrap' => ['log', 'app'],
 	'aliases' => [
 		'@bower' => '@vendor/bower-asset',
 		'@npm' => '@vendor/npm-asset',
@@ -16,6 +16,9 @@ $config = [
 		'request' => [
 			// !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
 			'cookieValidationKey' => 'ApXrOE17br9lwkjD-uuc81FY-sACVLY-',
+			'parsers' => [
+				'application/json' => 'yii\web\JsonParser',
+			]
 		],
 		'cache' => [
 			'class' => 'yii\redis\Cache',
@@ -29,11 +32,13 @@ $config = [
 			'timeout' => 3600
 		],
 		'user' => [
-			'identityClass' => 'app\models\User',
+			'identityClass' => 'app\models\Admin',
 			'enableAutoLogin' => true,
+			'enableSession' => false
 		],
 		'errorHandler' => [
-			'errorAction' => 'site/error',
+			'class' => 'app\components\errorHandler\ErrorHandler',
+			'errorAction' => 'rest/error'
 		],
 //		'mailer' => [
 //			'class' => 'yii\swiftmailer\Mailer',
@@ -59,6 +64,9 @@ $config = [
 			'rules' => [
 			],
 		],
+		'app' => 'app\components\app\AppComponent',
+	],
+	'modules' => [
 	],
 	'params' => $params,
 ];
