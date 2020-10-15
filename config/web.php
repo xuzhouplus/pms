@@ -32,12 +32,13 @@ $config = [
 			'timeout' => 3600
 		],
 		'user' => [
+			'class' => 'yii\web\User',
 			'identityClass' => 'app\models\Admin',
-			'enableAutoLogin' => true,
+			'enableAutoLogin' => false,
 			'enableSession' => false
 		],
 		'errorHandler' => [
-			'class' => 'app\components\errorHandler\ErrorHandler',
+			'class' => 'app\components\ErrorHandler',
 			'errorAction' => 'rest/error'
 		],
 //		'mailer' => [
@@ -64,7 +65,11 @@ $config = [
 			'rules' => [
 			],
 		],
-		'app' => 'app\components\app\AppComponent',
+		'app' => 'app\components\AppComponent',
+		'token' => [
+			'class' => 'app\components\TokenComponent',
+			'type' => 'cache'
+		]
 	],
 	'modules' => [
 	],

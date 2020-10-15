@@ -1,10 +1,8 @@
 <?php
 
 
-namespace app\components\app;
+namespace app\components;
 
-
-use app\models\Admin;
 use app\models\Setting;
 use Yii;
 use yii\base\Component;

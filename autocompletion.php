@@ -21,8 +21,9 @@ class Yii extends \yii\BaseYii
  * @property yii\web\UrlManager $urlManagerBackend UrlManager for backend application.
  * @property yii\web\UrlManager $urlManagerStorage UrlManager for storage application.
  * @property \yii\redis\Connection $redis
- * @property \app\components\app\AppComponent $app
- * @property \app\components\errorHandler\ErrorHandler $errorHandler
+ * @property \app\components\AppComponent $app
+ * @property \app\components\ErrorHandler $errorHandler
+ * @property \app\components\TokenComponent $token
  */
 abstract class BaseApplication extends yii\base\Application
 {
@@ -50,8 +51,8 @@ class ConsoleApplication extends yii\console\Application
  * User component
  * Include only Web application related components here
  *
- * @property \common\models\Identity $identity User model.
- * @method \common\models\Identity getIdentity() returns User model.
+ * @property \app\models\Admin $identity User model.
+ * @method \app\models\Admin getIdentity() returns User model.
  */
 class User extends \yii\web\User
 {

@@ -46,6 +46,8 @@ class Setting extends \yii\db\ActiveRecord
 	//百度网盘配置
 	const SETTING_KEY_BAIDU_PAN_APP_KEY = 'baidu_pan_app_key';
 	const SETTING_KEY_BAIDU_PAN_APP_SECRET = 'baidu_pan_app_secret';
+	//站点名称配置
+	const SETTING_KEY_TITLE='title';
 
 	/**
 	 * {@inheritdoc}

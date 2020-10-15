@@ -21,7 +21,8 @@
         "yiisoft/yii2-redis": "~2.0.0",
 		"ext-gd": "*",
         "endroid/qr-code": "^3.0@dev",
-        "lcobucci/jwt": "^4.0@dev"
+        "lcobucci/jwt": "^4.0@dev",
+        "tinymeng/oauth": "^1.0.0"
 	},
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

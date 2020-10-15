@@ -4,17 +4,20 @@
 namespace app\controllers;
 
 
+use app\behaviors\authenticators\CookieTokenAuth;
 use ReflectionException;
 use ReflectionMethod;
 use Yii;
 use yii\base\InlineAction;
 use yii\base\InvalidConfigException;
+use yii\base\UserException;
 use yii\filters\auth\CompositeAuth;
 use yii\filters\auth\HttpBearerAuth;
 use yii\rest\Action;
 use yii\rest\ActiveController;
 use yii\rest\OptionsAction;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class RestController extends ActiveController
 {
@@ -33,7 +36,7 @@ class RestController extends ActiveController
 	 * 需要认证，但可以不认证通过的方法
 	 * @var string[]
 	 */
-	public $optional = [];
+	public array $optional = [];
 	/**
 	 * 方法请求类型限制
 	 * @var array
@@ -146,6 +149,9 @@ class RestController extends ActiveController
 		$errorhandler = Yii::$app->errorHandler;
 		if (($exception = $errorhandler->exception) === null) {
 			$exception = new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+		}
+		if ($exception instanceof UserException) {
+			Yii::$app->response->setStatusCode(400);
 		}
 		return $errorhandler->convertExceptionToArray($exception);
 	}

@@ -14,16 +14,12 @@ use yii\web\User;
 
 class CookieTokenAuth extends AuthMethod
 {
-private $cookie='';
 	public function authenticate($user, $request, $response)
 	{
-		if($request->enableCookieValidation){
-			$authHeader=ArrayHelper::getValue($_COOKIE,$this->cookie);
-		}else {
-			$authHeader = $request->getCookies()->getValue($this->cookie);
-		}
-		if ($authHeader !== null) {
-			$identity = $user->loginByAccessToken($authHeader, get_class($this));
+		$token=\Yii::$app->token->cookie();
+
+		if ($token !== null) {
+			$identity = $user->loginByAccessToken($token, get_class($this));
 			if ($identity === null) {
 				$this->challenge($response);
 				$this->handleFailure($response);

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac88c5767ea74fdb7efe6ad6ed712186",
+    "content-hash": "09d800278ccd7fc2627dd2a123bed07f",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -60,7 +60,7 @@
             "version": "v3.4.1",
             "source": {
                 "type": "git",
-                "url": "git@github.com:twbs/bootstrap.git",
+                "url": "https://github.com/twbs/bootstrap.git",
                 "reference": "68b0d231a13201eb14acd3dc84e51543d16e5f7e"
             },
             "dist": {
@@ -1953,6 +1953,99 @@
                 }
             ],
             "time": "2020-07-08T08:28:10+00:00"
+        },
+        {
+            "name": "tinymeng/oauth",
+            "version": "v1.0.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/majiameng/OAuth2.git",
+                "reference": "14634ce90a403e53451f6d851e4c4a90dbb3baa0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/majiameng/OAuth2/zipball/14634ce90a403e53451f6d851e4c4a90dbb3baa0",
+                "reference": "14634ce90a403e53451f6d851e4c4a90dbb3baa0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "tinymeng/tools": "^1.1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "tinymeng\\OAuth2\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "JiaMeng Ma",
+                    "email": "666@majiameng.com",
+                    "homepage": "https://www.majiameng.com"
+                }
+            ],
+            "description": "weixin weibo qq alipay twitter google line facebook oauth",
+            "keywords": [
+                "alipay-login",
+                "github-login",
+                "login",
+                "oauth-login",
+                "php",
+                "qq-login",
+                "sina-login",
+                "tinymeng",
+                "wx-login"
+            ],
+            "time": "2020-08-17T13:42:49+00:00"
+        },
+        {
+            "name": "tinymeng/tools",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/majiameng/tools.git",
+                "reference": "840f881878d376a4966140b670dffa17828bcc6d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/majiameng/tools/zipball/840f881878d376a4966140b670dffa17828bcc6d",
+                "reference": "840f881878d376a4966140b670dffa17828bcc6d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "tinymeng\\tools\\": "src"
+                },
+                "files": []
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "JiaMeng Ma",
+                    "email": "666@majiameng.com",
+                    "homepage": "http://majiameng.com"
+                }
+            ],
+            "description": "Integrate third-party logins",
+            "keywords": [
+                "php",
+                "php-tools",
+                "tinymeng",
+                "tools"
+            ],
+            "time": "2020-08-17T13:34:11+00:00"
         },
         {
             "name": "yiisoft/yii2",
@@ -5864,7 +5957,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.6.0",
+        "php": ">=7.4",
         "ext-gd": "*"
     },
     "platform-dev": [],

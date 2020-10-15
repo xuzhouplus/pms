@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\components\baiduPan;
+namespace app\components;
 
 
 use app\models\Setting;

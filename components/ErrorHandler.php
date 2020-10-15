@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\components\errorHandler;
+namespace app\components;
 
 use Yii;
 use yii\base\UserException;

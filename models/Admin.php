@@ -3,9 +3,10 @@
 namespace app\models;
 
 use Faker\Provider\Uuid;
-use Faker\UniqueGenerator;
+use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key;
 use Yii;
-use yii\base\InvalidArgumentException;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\TimestampBehavior;
@@ -29,6 +30,8 @@ use yii\web\IdentityInterface;
  */
 class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 {
+	//用于保存认证用户的token
+	public $token;
 	const AUTH_KEY_CACHE_KEY = 'auth_key_cache';
 
 	const STATUS_ENABLED = 1;
@@ -124,13 +127,12 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 */
 	public static function findIdentityByAccessToken($token, $type = null)
 	{
-		$encryptSecret = Yii::$app->app->setting(Setting::SETTING_KEY_ENCRYPT_SECRET);
-		$decryptData = Yii::$app->security->decryptByKey($token, $encryptSecret);
-		if ($decryptData) {
-			$data = json_decode($decryptData, true);
-			$loginDuration = Yii::$app->app->setting(Setting::SETTING_KEY_LOGIN_DURATION);
-			if ($data['issued'] + $loginDuration > time()) {
-				return self::findIdentity($data['id']);
+		$data = Yii::$app->token->decode($token);
+		if ($data) {
+			$identity = self::findIdentity($data['id']);
+			if ($identity) {
+				$identity->token = $token;
+				return $identity;
 			}
 		}
 		return null;
@@ -141,12 +143,10 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 */
 	public function generateAccessToken()
 	{
-		$encryptSecret = Yii::$app->app->setting(Setting::SETTING_KEY_ENCRYPT_SECRET);
 		$data = [
-			'id' => $this->uuid,
-			'issued' => time()
+			'id' => $this->uuid
 		];
-		return Yii::$app->security->encryptByKey(json_encode($data), $encryptSecret);
+		return Yii::$app->token->encode($data);
 	}
 
 	public function getId()
@@ -256,6 +256,27 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 			throw new UserException('Delete failed');
 		}
 		throw new UserException('Admin is not exist');
+	}
+
+	/**
+	 * @param $account
+	 * @param $password
+	 * @return Admin
+	 * @throws \Exception
+	 */
+	public static function login($account, $password)
+	{
+		/**
+		 * @var $admin Admin
+		 */
+		$admin = Admin::find()->where(['account' => $account, 'status' => Admin::STATUS_ENABLED])->limit(1)->one();
+		if (empty($admin)) {
+			throw new \Exception('Account is wrong');
+		}
+		if ($admin->validatePassword($password)) {
+			return $admin;
+		}
+		throw new \Exception('Account or password is wrong');
 	}
 
 	public function deleteConnects()
