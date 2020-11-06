@@ -24,6 +24,7 @@ class Yii extends \yii\BaseYii
  * @property \app\components\AppComponent $app
  * @property \app\components\ErrorHandler $errorHandler
  * @property \app\components\TokenComponent $token
+ * @property \app\components\UploadComponent $upload
  */
 abstract class BaseApplication extends yii\base\Application
 {

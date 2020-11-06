@@ -69,6 +69,12 @@ $config = [
 		'token' => [
 			'class' => 'app\components\TokenComponent',
 			'type' => 'cache'
+		],
+		'upload' => [
+			'class' => 'app\components\UploadComponent',
+			'path' => '/home/vagrant/code/pms/web',
+			'host' => 'http://pms.test',
+			'extensions' => null,
 		]
 	],
 	'modules' => [

@@ -48,6 +48,11 @@ class CacheToken extends BaseToken
 
 	public function decode($token)
 	{
+		if (YII_ENV_DEV) {
+			return [
+				'id' => 1
+			];
+		}
 		$encryptString = base64_decode($token);
 		$decryptString = Yii::$app->security->decryptByKey($encryptString, $this->secret);
 		if (!$decryptString) {
