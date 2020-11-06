@@ -57,13 +57,17 @@ class AdminController extends RestController
 		return $this->response(null, null, 'Delete succeed');
 	}
 
+	/**
+	 * @return array
+	 * @throws UserException
+	 */
 	public function actionLogin()
 	{
 		$account = Yii::$app->request->getBodyParam('account');
 		$password = Yii::$app->request->getBodyParam('password');
 		$admin = Admin::login($account, $password);
 		if (empty($admin)) {
-			throw new \Exception('Login failed');
+			throw new UserException('Login failed');
 		}
 		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
 		$adminAttributes['token'] = $admin->generateAccessToken();
@@ -78,7 +82,7 @@ class AdminController extends RestController
 	{
 		$admin = Yii::$app->user->identity;
 		if (empty($admin)) {
-			throw new \Exception('Get auth info failed');
+			throw new UserException('Get auth info failed');
 		}
 		Yii::$app->token->delay($admin->token);
 		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);

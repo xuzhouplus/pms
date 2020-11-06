@@ -5,15 +5,17 @@ namespace app\components;
 
 
 use app\components\token\BaseToken;
-use app\components\token\JwtToken;
 
 class TokenComponent extends \yii\base\Component
 {
-	public $type = 'jwt';
 	/**
-	 * @var $handler JwtToken
+	 * @var string
 	 */
-	private $handler;
+	public string $type = 'jwt';
+	/**
+	 * @var $handler BaseToken
+	 */
+	private BaseToken $handler;
 
 	public function init()
 	{

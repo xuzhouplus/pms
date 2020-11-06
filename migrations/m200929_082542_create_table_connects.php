@@ -21,10 +21,10 @@ class m200929_082542_create_table_connects extends Migration
         $this->createTable($this->tableName, [
             'id' => $this->primaryKey(11),
             'admin_id' => $this->integer(11)->notNull()->comment('所属账号'),
-            'type' => $this->string('32')->notNull()->defaultValue('wechat')->comment('对接类型，wechat微信，weibo微博，qq QQ'),
-            'avatar'=>$this->string('255')->notNull()->comment('头像'),
-            'account' => $this->string('255')->notNull()->comment('账号'),
-            'open_id'=>$this->string('255')->notNull()->comment('三方授权唯一标识，微信、QQ为OpenID，微博为uid'),
+            'type' => $this->string(32)->notNull()->defaultValue('wechat')->comment('对接类型，wechat微信，weibo微博，qq QQ'),
+            'avatar'=>$this->string(255)->notNull()->comment('头像'),
+            'account' => $this->string(255)->notNull()->comment('账号'),
+            'open_id'=>$this->string(255)->notNull()->comment('三方授权唯一标识，微信、QQ为OpenID，微博为uid'),
             'status' => $this->tinyInteger(1)->defaultValue(1)->comment('状态，1启用，2禁用'),
             'created_at' => $this->dateTime()->comment('创建时间'),
             'updated_at' => $this->dateTime()->comment('更新时间')

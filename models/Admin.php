@@ -34,6 +34,8 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	public $token;
 	const AUTH_KEY_CACHE_KEY = 'auth_key_cache';
 
+	const TYPE_SUPER = 1;
+	const TYPE_NORMAL = 2;
 	const STATUS_ENABLED = 1;
 	const STATUS_DISABLED = 2;
 
@@ -76,10 +78,11 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	{
 		return [
 			[['type', 'status'], 'integer'],
-			[['avatar', 'account', 'password'], 'required'],
+			[['account', 'password'], 'required', 'on' => ['create', 'update']],
 			[['created_at', 'updated_at'], 'safe'],
 			[['avatar', 'account', 'password'], 'string', 'max' => 255],
 			[['uuid'], 'string', 'max' => 32],
+			['account', 'unique']
 		];
 	}
 
@@ -167,6 +170,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	/**
 	 * @param string $authKey
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function validateAuthKey($authKey)
 	{
@@ -271,12 +275,12 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 		 */
 		$admin = Admin::find()->where(['account' => $account, 'status' => Admin::STATUS_ENABLED])->limit(1)->one();
 		if (empty($admin)) {
-			throw new \Exception('Account is wrong');
+			throw new UserException('Account is wrong');
 		}
 		if ($admin->validatePassword($password)) {
 			return $admin;
 		}
-		throw new \Exception('Account or password is wrong');
+		throw new UserException('Account or password is wrong');
 	}
 
 	public function deleteConnects()

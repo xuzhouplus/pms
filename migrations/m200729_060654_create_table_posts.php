@@ -20,9 +20,10 @@ class m200729_060654_create_table_posts extends Migration
 		}
 		$this->createTable($this->tableName, [
 			'id' => $this->primaryKey(11),
-			'type' => $this->string('32')->notNull()->defaultValue('html')->comment('类型，html普通，md Markdown'),
-			'title' => $this->string('255')->notNull()->comment('标题'),
-			'sub_title' => $this->string('255')->notNull()->comment('二级标题'),
+			'uuid'=>$this->string(32)->unique()->comment('uuid'),
+			'type' => $this->string(32)->notNull()->defaultValue('html')->comment('类型，html普通，md Markdown'),
+			'title' => $this->string(255)->notNull()->comment('标题'),
+			'sub_title' => $this->string(255)->notNull()->comment('二级标题'),
 			'content' => $this->text()->comment('内容'),
 			'created_at' => $this->dateTime()->comment('创建时间'),
 			'updated_at' => $this->dateTime()->comment('更新时间')
