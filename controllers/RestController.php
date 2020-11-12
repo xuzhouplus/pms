@@ -27,6 +27,7 @@ class RestController extends ActiveController
 	public $responseOK = 1;
 	public $responseFail = 0;
 
+	public array $authMethods = [];
 	/**
 	 * 不需要认证的方法
 	 * @var string[]
@@ -53,9 +54,7 @@ class RestController extends ActiveController
 
 		$behaviors['authenticator'] = [
 			'class' => CompositeAuth::class,
-			'authMethods' => [
-				HttpBearerAuth::class
-			],
+			'authMethods' => array_merge($this->authMethods, [HttpBearerAuth::class]),
 			'optional' => $this->optional,
 			'except' => array_merge($this->except, ['error'])
 		];
@@ -132,6 +131,10 @@ class RestController extends ActiveController
 	 */
 	protected function response($data = null, $code = null, $message = null)
 	{
+		if (is_string($code)) {
+			$message = $code;
+			$code = null;
+		}
 		return [
 			'data' => $data,
 			'message' => $message ?: '',

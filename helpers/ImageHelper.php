@@ -40,9 +40,23 @@ class ImageHelper
 		// return result
 		return $gdImageResource;
 	}
-	public static function carouselImage($carouseFile){
-	    $sourceFile=imagecreatefromjpeg($carouseFile);
-	    $gaussFile=self::blur($sourceFile);
 
-    }
+	public static function carouselImage($carouseFile)
+	{
+		$sourceFilePathInfo=pathinfo($carouseFile);
+		str_replace($sourceFilePathInfo['extension'],$sourceFilePathInfo['basename']);
+		$targetFilePath=$sourceFilePathInfo['dirname'];
+		$targetFileWidth=1920;
+		$targetFileHeight=1080;
+		$sourceFile = imagecreatefromjpeg($carouseFile);
+		$gaussFile = self::blur($sourceFile);
+		$gaussFileWidth = imagesx($gaussFile);
+		$gaussFileHeight = imagesy($gaussFile);
+		$targetFile = imagecreatetruecolor($targetFileWidth, $targetFileHeight);
+		imagecopyresized($targetFile, $gaussFile, 0, 0, 0, 0, $targetFileWidth, $targetFileHeight, $gaussFileWidth, $gaussFileHeight);
+		$targetXOffset = max($targetFileWidth - $gaussFileWidth, 0);
+		$targetYOffset = max($targetFileHeight - $gaussFileHeight, 0);
+		imagecopy($targetFile, $sourceFile, $targetXOffset / 2, $targetYOffset / 2, 0, 0, $gaussFileWidth, $gaussFileHeight);
+imagejpeg($targetFile,$carouseFile);
+	}
 }

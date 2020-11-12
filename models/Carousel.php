@@ -12,6 +12,7 @@ use yii\helpers\ArrayHelper;
  *
  * @property int $id
  * @property string $uuid
+ * @property int $file_id
  * @property string $type 类型，image图片，video视频，ad广告，html网页
  * @property string $title 标题
  * @property string $url 访问地址
@@ -56,13 +57,21 @@ class Carousel extends \yii\db\ActiveRecord
 			'id' => 'ID',
 			'type' => 'Type',
 			'title' => 'Title',
-			'Url' => 'Url',
+			'url' => 'Url',
 			'width' => 'Width',
 			'height' => 'Height',
 			'description' => 'Description',
 		];
 	}
 
+	/**
+	 * @param null $page
+	 * @param int $limit
+	 * @param array $select
+	 * @param string $like
+	 * @param null $enable
+	 * @return array
+	 */
 	public static function list($page = null, $limit = 10, $select = [], $like = '', $enable = null)
 	{
 		$query = Carousel::find();
@@ -89,12 +98,12 @@ class Carousel extends \yii\db\ActiveRecord
 		]);
 		$pagination = $dataProvider->getPagination();
 		return [
-			'pageSize' => $pagination->getPageSize(),
-			'pageCount' => $pagination->getPageCount(),
-			'pageOffset' => $pagination->getPage(),
-			'totalCount' => $pagination->totalCount,
-			'recordOffset' => $pagination->getOffset(),
-			'auditTasks' => $dataProvider->getModels(),
+			'size' => $pagination->getPageSize(),
+			'count' => $pagination->getPageCount(),
+			'page' => $pagination->getPage(),
+			'total' => $pagination->totalCount,
+			'offset' => $pagination->getOffset(),
+			'carousels' => $dataProvider->getModels(),
 		];
 	}
 
@@ -105,6 +114,11 @@ class Carousel extends \yii\db\ActiveRecord
 	 */
 	public static function create($data)
 	{
+		$file = File::find()->where(['id' => $data['file_id']])->limit(1)->one();
+		$carouselUrl = Carousel::make($file);
+		unset($data['file_id']);
+		$data['url'] = $carouselUrl;
+		$data['type'] = $file->type;
 		$carousel = new Carousel();
 		$carousel->setScenario('create');
 		$carousel->load($data, '');
@@ -124,6 +138,14 @@ class Carousel extends \yii\db\ActiveRecord
 	{
 		$carousel = Carousel::find()->where(['id' => ArrayHelper::getValue($data, 'id')])->limit(1)->one();
 		if ($carousel) {
+			if ($carousel->file_id != $data['file_id']) {
+				Carousel::destroy($carousel->url);
+				$file = File::find()->where(['id' => $data['file_id']])->limit(1)->one();
+				$carouselUrl = Carousel::make($file);
+				unset($data['file_id']);
+				$data['url'] = $carouselUrl;
+				$data['type'] = $file->type;
+			}
 			$carousel->setScenario('update');
 			$carousel->load($data);
 			if ($carousel->save()) {
@@ -146,8 +168,37 @@ class Carousel extends \yii\db\ActiveRecord
 	{
 		$carousel = Carousel::find()->where(['id' => $id])->limit(1)->one();
 		if ($carousel) {
+			Carousel::destroy($carousel->url);
 			return $carousel->delete();
 		}
 		throw new UserException('Carousel is not exist');
+	}
+
+	/**
+	 * @param File|string $file
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public static function make($file)
+	{
+		$carousel = Yii::$app->image->create(($file instanceof File) ? $file->getPath() : $file, 1920, 1080, 'jpg', 3);
+		if ($carousel) {
+			$image = Yii::$app->image->compress($carousel->target->dir . DIRECTORY_SEPARATOR . $carousel->target->name, 60);
+			return str_replace('\\', '/', str_replace(Yii::$app->upload->path, Yii::$app->upload->host, $image->dir . DIRECTORY_SEPARATOR . $image->name));
+		}
+		throw new \Exception('fail to make carousel of file:' . $file);
+	}
+
+	/**
+	 * @param $file
+	 * @return bool
+	 */
+	public static function destroy($file)
+	{
+		$filePath = str_replace('\\', '/', str_replace(Yii::$app->upload->host, Yii::$app->upload->path, $file));
+		if (file_exists($filePath)) {
+			return unlink($filePath);
+		}
+		return true;
 	}
 }

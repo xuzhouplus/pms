@@ -5,14 +5,16 @@ namespace app\controllers;
 
 
 use app\models\File;
-use yii\web\UploadedFile;
 
 class FileController extends RestController
 {
-
-	public function actionIndex(){
-
+	public function actionIndex()
+	{
+		$request = \Yii::$app->request;
+		$files = File::list($request->getQueryParam('page'), $request->getQueryParam('limit'), null, $request->getQueryParam('type'), $request->getQueryParam('name'));
+		return $this->response($files, 'succeed');
 	}
+
 	public function actionUpload()
 	{
 		$file = new File();
