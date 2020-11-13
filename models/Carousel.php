@@ -2,9 +2,14 @@
 
 namespace app\models;
 
+use Faker\Provider\Uuid;
 use Yii;
 use yii\base\UserException;
+use yii\behaviors\AttributeBehavior;
+use yii\behaviors\TimestampBehavior;
 use yii\data\ActiveDataProvider;
+use yii\db\ActiveRecord;
+use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -34,6 +39,21 @@ class Carousel extends \yii\db\ActiveRecord
 		return '{{%carousels}}';
 	}
 
+	public function behaviors()
+	{
+		return [
+			'uuid' => [
+				'class' => AttributeBehavior::class,
+				'attributes' => [
+					ActiveRecord::EVENT_BEFORE_INSERT => 'uuid'
+				],
+				'value' => function ($event) {
+					return str_replace('-', '', Uuid::uuid());
+				}
+			]
+		];
+	}
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -44,7 +64,8 @@ class Carousel extends \yii\db\ActiveRecord
 			[['width', 'height'], 'integer'],
 			[['type'], 'string', 'max' => 32],
 			[['title', 'description'], 'string', 'max' => 255],
-			['url', 'url']
+			['url', 'url'],
+			[['uuid'], 'string', 'max' => 32],
 		];
 	}
 
@@ -55,6 +76,7 @@ class Carousel extends \yii\db\ActiveRecord
 	{
 		return [
 			'id' => 'ID',
+			'uuid' => 'UUID',
 			'type' => 'Type',
 			'title' => 'Title',
 			'url' => 'Url',
@@ -84,14 +106,13 @@ class Carousel extends \yii\db\ActiveRecord
 		if (!is_numeric($enable)) {
 			$query->andFilterWhere(['status' => $enable]);
 		}
-		if ($page) {
-			$pagination = [
-				'page' => $page,
-				'pageSize' => $limit,
-			];
-		} else {
-			$pagination = null;
+		if (is_null($page)) {
+			return $query->all();
 		}
+		$pagination = [
+			'page' => $page,
+			'pageSize' => $limit,
+		];
 		$dataProvider = new ActiveDataProvider([
 			'query' => $query,
 			'pagination' => $pagination,
@@ -119,6 +140,8 @@ class Carousel extends \yii\db\ActiveRecord
 		unset($data['file_id']);
 		$data['url'] = $carouselUrl;
 		$data['type'] = $file->type;
+		$data['width'] = $file->width;
+		$data['height'] = $file->height;
 		$carousel = new Carousel();
 		$carousel->setScenario('create');
 		$carousel->load($data, '');
@@ -145,6 +168,8 @@ class Carousel extends \yii\db\ActiveRecord
 				unset($data['file_id']);
 				$data['url'] = $carouselUrl;
 				$data['type'] = $file->type;
+				$data['width'] = $file->width;
+				$data['height'] = $file->height;
 			}
 			$carousel->setScenario('update');
 			$carousel->load($data);

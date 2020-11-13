@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\data\ActiveDataProvider;
 
 /**
  * This is the model class for table "{{%posts}}".
@@ -54,4 +55,35 @@ class Post extends \yii\db\ActiveRecord
             'updated_at' => '更新时间',
         ];
     }
+
+   public static function list($page = 0, $limit = 10, $select = [], $like = '', $enable = null)
+   {
+	   $query = Post::find();
+	   if ($select) {
+		   $query->select($select);
+	   }
+	   if ($like) {
+		   $query->where(['like', 'title', $like]);
+	   }
+	   if (!is_numeric($enable)) {
+		   $query->andFilterWhere(['status' => $enable]);
+	   }
+	   $pagination = [
+		   'page' => $page,
+		   'pageSize' => $limit,
+	   ];
+	   $dataProvider = new ActiveDataProvider([
+		   'query' => $query,
+		   'pagination' => $pagination,
+	   ]);
+	   $pagination = $dataProvider->getPagination();
+	   return [
+		   'size' => $pagination->getPageSize(),
+		   'count' => $pagination->getPageCount(),
+		   'page' => $pagination->getPage(),
+		   'total' => $pagination->totalCount,
+		   'offset' => $pagination->getOffset(),
+		   'carousels' => $dataProvider->getModels(),
+	   ];
+   }
 }

@@ -14,8 +14,7 @@ class CarouselController extends RestController
 
 	public function actionIndex()
 	{
-		$request = \Yii::$app->request;
-		$carousels = Carousel::list($request->getQueryParam('page'), $request->getQueryParam('limit'), ['uuid', 'type', 'width', 'height', 'title', 'url', 'description'], $request->getQueryParam('like'), true);
+		$carousels = Carousel::list(null, 0, ['uuid', 'type', 'width', 'height', 'title', 'url', 'description'], null, true);
 		return $this->response($carousels, 'succeed');
 	}
 
