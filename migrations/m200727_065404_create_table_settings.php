@@ -100,13 +100,21 @@ class m200727_065404_create_table_settings extends Migration
 			[
 				'key' => 'carousel_type',
 				'name' => '轮播类型',
-				'type' => \app\models\Setting::TYPE_INPUT,
+				'type' => \app\models\Setting::TYPE_SELECT,
 				'private' => \app\models\Setting::PUBLIC_SETTING,
 				'value' => 'webgl',
 				'options' => json_encode([
 					\app\models\Carousel::TYPE_WEBGL => 'webGL',
 					\app\models\Carousel::TYPE_BOOTSTRAP => 'Bootstrap'
 				])
+			],
+			[
+				'key' => 'carousel_limit',
+				'name' => '轮播数量限制',
+				'type' => \app\models\Setting::TYPE_INPUT,
+				'private' => \app\models\Setting::PUBLIC_SETTING,
+				'value' => '3',
+				'options' => ''
 			],
 		];
 		$this->batchInsert($this->tableName, ['key', 'name', 'type', 'private', 'value', 'options'], $settings);
