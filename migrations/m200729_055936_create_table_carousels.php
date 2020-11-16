@@ -27,7 +27,8 @@ class m200729_055936_create_table_carousels extends Migration
 			'width' => $this->integer(11)->comment('幅面宽'),
 			'height' => $this->integer(11)->comment('幅面高'),
 			'description' => $this->string(255)->comment('描述'),
-			'status' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('状态，1启用，2禁用')
+			'status' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('状态，1启用，2禁用'),
+			'order' => $this->integer(2)->notNull()->defaultValue(99)->comment('顺序')
 		], $tableOptions);
 	}
 

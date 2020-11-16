@@ -14,7 +14,7 @@ class CarouselController extends RestController
 
 	public function actionIndex()
 	{
-		$carousels = Carousel::list(null, 0, ['uuid', 'type', 'width', 'height', 'title', 'url', 'description'], null, true);
+		$carousels = Carousel::list(null, 0, ['uuid', 'type', 'width', 'height', 'title', 'url', 'description'], null, true, 'order');
 		return $this->response($carousels, 'succeed');
 	}
 

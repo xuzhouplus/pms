@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use Exception;
 use Faker\Provider\Uuid;
 use Yii;
 use yii\base\UserException;
@@ -25,11 +26,15 @@ use yii\helpers\ArrayHelper;
  * @property int|null $height 幅面高
  * @property string|null $description 描述
  * @property int $status 状态，1启用，2禁用
+ * @property int $order
  */
 class Carousel extends \yii\db\ActiveRecord
 {
 	const STATUS_ENABLED = 1;
 	const STATUS_DISABLED = 2;
+
+	const TYPE_WEBGL = 'webgl';
+	const TYPE_BOOTSTRAP = 'bootstrap';
 
 	/**
 	 * {@inheritdoc}
@@ -66,6 +71,11 @@ class Carousel extends \yii\db\ActiveRecord
 			[['title', 'description'], 'string', 'max' => 255],
 			['url', 'url'],
 			[['uuid'], 'string', 'max' => 32],
+			['order', 'default', 'value' => function () {
+				$maxOrder = Carousel::find()->max('[[order]]');
+				return $maxOrder ? ($maxOrder + 1) : 0;
+			}],
+			['order', 'integer']
 		];
 	}
 
@@ -83,6 +93,8 @@ class Carousel extends \yii\db\ActiveRecord
 			'width' => 'Width',
 			'height' => 'Height',
 			'description' => 'Description',
+			'status' => 'Status',
+			'order' => 'Order'
 		];
 	}
 
@@ -92,9 +104,10 @@ class Carousel extends \yii\db\ActiveRecord
 	 * @param array $select
 	 * @param string $like
 	 * @param null $enable
-	 * @return array
+	 * @param null $order
+	 * @return array|ActiveRecord[]
 	 */
-	public static function list($page = null, $limit = 10, $select = [], $like = '', $enable = null)
+	public static function list($page = null, $limit = 10, $select = [], $like = '', $enable = null, $order = null)
 	{
 		$query = Carousel::find();
 		if ($select) {
@@ -105,6 +118,9 @@ class Carousel extends \yii\db\ActiveRecord
 		}
 		if (!is_numeric($enable)) {
 			$query->andFilterWhere(['status' => $enable]);
+		}
+		if ($order) {
+			$query->orderBy($order);
 		}
 		if (is_null($page)) {
 			return $query->all();
@@ -132,6 +148,7 @@ class Carousel extends \yii\db\ActiveRecord
 	 * @param $data
 	 * @return Carousel
 	 * @throws UserException
+	 * @throws \yii\db\Exception
 	 */
 	public static function create($data)
 	{
@@ -146,6 +163,7 @@ class Carousel extends \yii\db\ActiveRecord
 		$carousel->setScenario('create');
 		$carousel->load($data, '');
 		if ($carousel->save()) {
+			$carousel->setOrder($carousel->order);
 			return $carousel;
 		}
 		$errors = $carousel->getFirstErrors();
@@ -174,6 +192,7 @@ class Carousel extends \yii\db\ActiveRecord
 			$carousel->setScenario('update');
 			$carousel->load($data);
 			if ($carousel->save()) {
+				$carousel->setOrder($carousel->order);
 				return $carousel;
 			}
 			$errors = $carousel->getFirstErrors();
@@ -194,7 +213,11 @@ class Carousel extends \yii\db\ActiveRecord
 		$carousel = Carousel::find()->where(['id' => $id])->limit(1)->one();
 		if ($carousel) {
 			Carousel::destroy($carousel->url);
-			return $carousel->delete();
+			if ($carousel->delete()) {
+				$carousel->setOrder(null);
+				return true;
+			}
+			return false;
 		}
 		throw new UserException('Carousel is not exist');
 	}
@@ -202,7 +225,7 @@ class Carousel extends \yii\db\ActiveRecord
 	/**
 	 * @param File|string $file
 	 * @return mixed
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public static function make($file)
 	{
@@ -211,7 +234,7 @@ class Carousel extends \yii\db\ActiveRecord
 			$image = Yii::$app->image->compress($carousel->target->dir . DIRECTORY_SEPARATOR . $carousel->target->name, 60);
 			return str_replace('\\', '/', str_replace(Yii::$app->upload->path, Yii::$app->upload->host, $image->dir . DIRECTORY_SEPARATOR . $image->name));
 		}
-		throw new \Exception('fail to make carousel of file:' . $file);
+		throw new Exception('fail to make carousel of file:' . $file);
 	}
 
 	/**
@@ -225,5 +248,45 @@ class Carousel extends \yii\db\ActiveRecord
 			return unlink($filePath);
 		}
 		return true;
+	}
+
+	/**
+	 * @param $id
+	 * @param $order
+	 * @throws \yii\db\Exception
+	 */
+	public function setOrder($order)
+	{
+		if ($this->order == $order) {
+			return;
+		}
+		$transaction = Carousel::getDb()->beginTransaction();
+		try {
+			if (is_null($order)) {
+				foreach (Carousel::find()->where(['>', 'order', $this->order])->each() as $carousel) {
+					$carousel->order = $carousel->order - 1;
+					$carousel->save();
+				}
+				$transaction->commit();
+				return;
+			}
+			if ($order < $this->order) {
+				foreach (Carousel::find()->where(['>', 'order', $order - 1])->andWhere(['<', 'order', $this->order])->each() as $carousel) {
+					$carousel->order = $carousel->order + 1;
+					$carousel->save();
+				}
+			} else {
+				foreach (Carousel::find()->where(['>', 'order', $this->order])->andWhere(['<', 'order', $order])->each() as $carousel) {
+					$carousel->order = $carousel->order - 1;
+					$carousel->save();
+				}
+			}
+			$this->order = $order;
+			$this->save();
+			$transaction->commit();
+		} catch (Exception $exception) {
+			$transaction->rollBack();
+			throw $exception;
+		}
 	}
 }
