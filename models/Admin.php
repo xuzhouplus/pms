@@ -17,16 +17,16 @@ use yii\web\IdentityInterface;
 /**
  * This is the model class for table "{{%admins}}".
  *
- * @property int $id
- * @property string $uuid
- * @property int|null $type 类型，1超管，2普通
+ * 管理账号
+ * @property integer $id
+ * @property string $uuid UUID
+ * @property integer $type 类型，1超管，2普通
  * @property string $avatar 头像
  * @property string $account 账号
  * @property string $password 密码
- * @property int|null $status 状态，1启用，2禁用
- * @property string|null $created_at 创建时间
- * @property-read Connect $connect
- * @property string|null $updated_at 更新时间
+ * @property integer $status 状态，1启用，2禁用
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
  */
 class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 {
@@ -187,9 +187,17 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	/**
 	 * @param $password
 	 * @return bool
+	 * @throws UserException
 	 */
 	public function validatePassword($password)
 	{
+		$privateKey = openssl_get_privatekey(file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem'));
+		$rsaDecrypt = openssl_private_decrypt(base64_decode($password), $decrypted, $privateKey);
+		if ($rsaDecrypt) {
+			$password = $decrypted;
+		} else {
+			throw new UserException('Password is incredible');
+		}
 		return Yii::$app->security->validatePassword($password, $this->password);
 	}
 

@@ -22,7 +22,7 @@ class SettingController extends RestController
 	public function actionIndex()
 	{
 		$settings = Setting::getPublicSettings();
-		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
+		return $this->response(ArrayHelper::map($settings, 'key', 'value'), null, null, 404);
 	}
 
 	public function actionAdd()

@@ -8,13 +8,16 @@ use yii\data\ActiveDataProvider;
 /**
  * This is the model class for table "{{%posts}}".
  *
- * @property int $id
+ * 稿件
+ * @property integer $id
+ * @property string $uuid uuid
  * @property string $type 类型，html普通，md Markdown
  * @property string $title 标题
  * @property string $sub_title 二级标题
- * @property string|null $content 内容
- * @property string|null $created_at 创建时间
- * @property string|null $updated_at 更新时间
+ * @property string $cover 封面
+ * @property string $content 内容
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
  */
 class Post extends \yii\db\ActiveRecord
 {

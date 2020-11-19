@@ -21,6 +21,7 @@ class m200729_055936_create_table_carousels extends Migration
 		$this->createTable($this->tableName, [
 			'id' => $this->primaryKey(11),
 			'uuid' => $this->string(32)->unique()->comment('uuid'),
+			'file_id' => $this->integer(11)->comment('使用的文件id'),
 			'type' => $this->string(32)->notNull()->comment('类型，image图片，video视频，ad广告，html网页'),
 			'title' => $this->string(255)->notNull()->comment('标题'),
 			'url' => $this->string(255)->notNull()->comment('地址'),
@@ -30,6 +31,7 @@ class m200729_055936_create_table_carousels extends Migration
 			'status' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('状态，1启用，2禁用'),
 			'order' => $this->integer(2)->notNull()->defaultValue(99)->comment('顺序')
 		], $tableOptions);
+		$this->createIndex('OrderIndex', $this->tableName, 'order', false);
 	}
 
 	/**

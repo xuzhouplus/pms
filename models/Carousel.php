@@ -4,29 +4,27 @@ namespace app\models;
 
 use Exception;
 use Faker\Provider\Uuid;
-use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
-use yii\behaviors\TimestampBehavior;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveRecord;
-use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "{{%carousels}}".
  *
- * @property int $id
- * @property string $uuid
- * @property int $file_id
+ * 首页幻灯片
+ * @property integer $id
+ * @property string $uuid uuid
+ * @property integer $file_id 使用的文件id
  * @property string $type 类型，image图片，video视频，ad广告，html网页
  * @property string $title 标题
- * @property string $url 访问地址
- * @property int|null $width 幅面宽
- * @property int|null $height 幅面高
- * @property string|null $description 描述
- * @property int $status 状态，1启用，2禁用
- * @property int $order
+ * @property string $url 地址
+ * @property integer $width 幅面宽
+ * @property integer $height 幅面高
+ * @property string $description 描述
+ * @property integer $status 状态，1启用，2禁用
+ * @property integer $order 顺序
  */
 class Carousel extends \yii\db\ActiveRecord
 {
@@ -35,6 +33,9 @@ class Carousel extends \yii\db\ActiveRecord
 
 	const TYPE_WEBGL = 'webgl';
 	const TYPE_BOOTSTRAP = 'bootstrap';
+
+	const ORIENTATION_MOVE_UP = 'up';
+	const ORIENTATION_MOVE_DOWN = 'down';
 
 	/**
 	 * {@inheritdoc}
@@ -65,7 +66,7 @@ class Carousel extends \yii\db\ActiveRecord
 	public function rules()
 	{
 		return [
-			[['type', 'title', 'url'], 'required', 'on' => ['create', 'update']],
+			[['type', 'title', 'url', 'file_id'], 'required', 'on' => ['create', 'update']],
 			[['width', 'height'], 'integer'],
 			[['type'], 'string', 'max' => 32],
 			[['title', 'description'], 'string', 'max' => 255],
@@ -87,6 +88,7 @@ class Carousel extends \yii\db\ActiveRecord
 		return [
 			'id' => 'ID',
 			'uuid' => 'UUID',
+			'file_id' => 'File ID',
 			'type' => 'Type',
 			'title' => 'Title',
 			'url' => 'Url',
@@ -96,6 +98,62 @@ class Carousel extends \yii\db\ActiveRecord
 			'status' => 'Status',
 			'order' => 'Order'
 		];
+	}
+
+	/**
+	 * @param $order
+	 * @throws \yii\db\Exception
+	 */
+	public function setOrder($order)
+	{
+		if ($this->order == $order) {
+			return;
+		}
+		$transaction = Carousel::getDb()->beginTransaction();
+		try {
+			if (is_null($order)) {
+				foreach (Carousel::find()->where(['>', 'order', $this->order])->each() as $carousel) {
+					$carousel->order = $carousel->order - 1;
+					$carousel->save();
+				}
+				$transaction->commit();
+				return;
+			}
+			if ($order < $this->order) {
+				foreach (Carousel::find()->where(['>', 'order', $order - 1])->andWhere(['<', 'order', $this->order])->each() as $carousel) {
+					$carousel->order = $carousel->order + 1;
+					$carousel->save();
+				}
+			} else {
+				foreach (Carousel::find()->where(['>', 'order', $this->order])->andWhere(['<', 'order', $order])->each() as $carousel) {
+					$carousel->order = $carousel->order - 1;
+					$carousel->save();
+				}
+			}
+			$this->order = $order;
+			$this->save();
+			$transaction->commit();
+		} catch (Exception $exception) {
+			$transaction->rollBack();
+			throw $exception;
+		}
+	}
+
+	public function isEnabled()
+	{
+		return $this->status == Carousel::STATUS_ENABLED;
+	}
+
+	public function enable()
+	{
+		$this->status = Carousel::STATUS_ENABLED;
+		$this->save();
+	}
+
+	public function disable()
+	{
+		$this->status = Carousel::STATUS_DISABLED;
+		$this->save();
 	}
 
 	/**
@@ -149,12 +207,23 @@ class Carousel extends \yii\db\ActiveRecord
 	 * @return Carousel
 	 * @throws UserException
 	 * @throws \yii\db\Exception
+	 * @throws Exception
 	 */
 	public static function create($data)
 	{
+		if ($data['status'] == Carousel::STATUS_ENABLED) {
+			if (Carousel::find()->where(['status' => Carousel::STATUS_ENABLED])->count('id') == Setting::getSetting(Setting::CAROUSEL_LIMIT)) {
+				throw new UserException('The carousels number is reached limit');
+			}
+		}
+		/**
+		 * @var $file File
+		 */
 		$file = File::find()->where(['id' => $data['file_id']])->limit(1)->one();
-		$carouselUrl = Carousel::make($file);
-		unset($data['file_id']);
+		if (!$file) {
+			throw new UserException('File is not exist:' . $data['file_id']);
+		}
+		$carouselUrl = CarouselService::make($file);
 		$data['url'] = $carouselUrl;
 		$data['type'] = $file->type;
 		$data['width'] = $file->width;
@@ -179,11 +248,18 @@ class Carousel extends \yii\db\ActiveRecord
 	{
 		$carousel = Carousel::find()->where(['id' => ArrayHelper::getValue($data, 'id')])->limit(1)->one();
 		if ($carousel) {
+			if ($data['status'] == Carousel::STATUS_ENABLED) {
+				if (Carousel::find()->where(['status' => Carousel::STATUS_ENABLED])->count('id') == Setting::getSetting(Setting::CAROUSEL_LIMIT)) {
+					throw new UserException('The carousels number is reached limit');
+				}
+			}
 			if ($carousel->file_id != $data['file_id']) {
-				Carousel::destroy($carousel->url);
+				CarouselService::destroy($carousel->url);
 				$file = File::find()->where(['id' => $data['file_id']])->limit(1)->one();
-				$carouselUrl = Carousel::make($file);
-				unset($data['file_id']);
+				if (!$file) {
+					throw new UserException('File is not exist:' . $data['file_id']);
+				}
+				$carouselUrl = CarouselService::make($file);
 				$data['url'] = $carouselUrl;
 				$data['type'] = $file->type;
 				$data['width'] = $file->width;
@@ -212,7 +288,7 @@ class Carousel extends \yii\db\ActiveRecord
 	{
 		$carousel = Carousel::find()->where(['id' => $id])->limit(1)->one();
 		if ($carousel) {
-			Carousel::destroy($carousel->url);
+			CarouselService::destroy($carousel->url);
 			if ($carousel->delete()) {
 				$carousel->setOrder(null);
 				return true;
@@ -252,41 +328,67 @@ class Carousel extends \yii\db\ActiveRecord
 
 	/**
 	 * @param $id
-	 * @param $order
-	 * @throws \yii\db\Exception
+	 * @return Carousel
+	 * @throws UserException
 	 */
-	public function setOrder($order)
+	public static function toggle($id)
 	{
-		if ($this->order == $order) {
-			return;
+		/**
+		 * @var Carousel $carousel
+		 */
+		$carousel = Carousel::find()->where(['id' => $id])->limit(1)->one();
+		if ($carousel) {
+			$carousel->isEnabled() ? $carousel->disable() : $carousel->enable();
+			return $carousel;
 		}
-		$transaction = Carousel::getDb()->beginTransaction();
-		try {
-			if (is_null($order)) {
-				foreach (Carousel::find()->where(['>', 'order', $this->order])->each() as $carousel) {
-					$carousel->order = $carousel->order - 1;
-					$carousel->save();
-				}
-				$transaction->commit();
+		throw new UserException('Carousel is not exist');
+	}
+
+	public function adjustOrder()
+	{
+		$menus = Carousel::find()->orderBy(['order' => SORT_ASC])->all();
+		foreach ($menus as $index => $menu) {
+			if ($menu->order != $index) {
+				$menu->order = $index;
+				$menu->save(false);
+			}
+		}
+	}
+
+	/**
+	 * @param $orientation
+	 */
+	public function move($orientation)
+	{
+		if (is_bool($orientation)) {
+			if ($orientation) {
+				$orientation = Carousel::ORIENTATION_MOVE_UP;
+			} else {
+				$orientation = Carousel::ORIENTATION_MOVE_DOWN;
+			}
+		} else {
+			if (!ArrayHelper::isIn($orientation, [Carousel::ORIENTATION_MOVE_UP, Carousel::ORIENTATION_MOVE_DOWN])) {
+				$orientation = Carousel::ORIENTATION_MOVE_UP;
+			}
+		}
+		if ($orientation == Carousel::ORIENTATION_MOVE_UP) {
+			if ($this->order === 0) {
 				return;
 			}
-			if ($order < $this->order) {
-				foreach (Carousel::find()->where(['>', 'order', $order - 1])->andWhere(['<', 'order', $this->order])->each() as $carousel) {
-					$carousel->order = $carousel->order + 1;
-					$carousel->save();
-				}
-			} else {
-				foreach (Carousel::find()->where(['>', 'order', $this->order])->andWhere(['<', 'order', $order])->each() as $carousel) {
-					$carousel->order = $carousel->order - 1;
-					$carousel->save();
-				}
-			}
-			$this->order = $order;
+			$carousel = Carousel::find()->where(['order' => $this->order - 1])->limit(1)->one();
+			$carousel->order = $this->order;
+			$this->order = $carousel->order;
 			$this->save();
-			$transaction->commit();
-		} catch (Exception $exception) {
-			$transaction->rollBack();
-			throw $exception;
+			$carousel->save();
+		} else {
+			if ($this->order === 99) {
+				return;
+			}
+			$carousel = Carousel::find()->where(['order' => $this->order + 1])->limit(1)->one();
+			$carousel->order = $this->order;
+			$this->order = $carousel->order;
+			$this->save();
+			$carousel->save();
 		}
 	}
 }

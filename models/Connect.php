@@ -7,15 +7,16 @@ use Yii;
 /**
  * This is the model class for table "{{%connects}}".
  *
- * @property int $id
- * @property int $admin_id 所属账号
+ * 第三方账号互联
+ * @property integer $id
+ * @property integer $admin_id 所属账号
  * @property string $type 对接类型，wechat微信，weibo微博，qq QQ
  * @property string $avatar 头像
  * @property string $account 账号
  * @property string $open_id 三方授权唯一标识，微信、QQ为OpenID，微博为uid
- * @property int|null $status 状态，1启用，2禁用
- * @property string|null $created_at 创建时间
- * @property string|null $updated_at 更新时间
+ * @property integer $status 状态，1启用，2禁用
+ * @property string $created_at 创建时间
+ * @property string $updated_at 更新时间
  */
 class Connect extends \yii\db\ActiveRecord
 {

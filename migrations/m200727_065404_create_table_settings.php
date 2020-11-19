@@ -112,7 +112,7 @@ class m200727_065404_create_table_settings extends Migration
 				'key' => 'carousel_limit',
 				'name' => '轮播数量限制',
 				'type' => \app\models\Setting::TYPE_INPUT,
-				'private' => \app\models\Setting::PUBLIC_SETTING,
+				'private' => \app\models\Setting::PRIVATE_SETTING,
 				'value' => '3',
 				'options' => ''
 			],

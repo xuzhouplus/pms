@@ -127,9 +127,10 @@ class RestController extends ActiveController
 	 * @param null $data
 	 * @param null $code
 	 * @param null $message
+	 * @param int $status
 	 * @return array
 	 */
-	protected function response($data = null, $code = null, $message = null)
+	protected function response($data = null, $code = null, $message = null, $status = 200)
 	{
 		if (is_string($code)) {
 			$message = $code;
@@ -139,7 +140,7 @@ class RestController extends ActiveController
 			'data' => $data,
 			'message' => $message ?: '',
 			'code' => $code ?: $this->responseOK,
-			'status' => 200
+			'status' => $status
 		];
 	}
 

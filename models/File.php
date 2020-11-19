@@ -14,13 +14,14 @@ use yii\web\UploadedFile;
 /**
  * This is the model class for table "{{%files}}".
  *
- * @property int $id
+ * 文件管理
+ * @property integer $id
  * @property string $type 文件类型
  * @property string $name 文件名
- * @property string|null $path 文件路径
- * @property int|null $width 幅面宽
- * @property int|null $height 幅面高
- * @property string|null $description 说明
+ * @property string $path 文件路径
+ * @property integer $width 幅面宽
+ * @property integer $height 幅面高
+ * @property string $description 说明
  */
 class File extends \yii\db\ActiveRecord
 {

@@ -10,14 +10,15 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "{{%settings}}".
  *
- * @property int $id
+ * 系统配置
+ * @property integer $id
  * @property string $key 配置标识
  * @property string $name 配置名称
  * @property string $type 配置类型，input输入框，radio单选框，checkbox复选框，select下拉选择，multiSelect多选下拉选择，textarea文本域
- * @property int $private 是否私有，1是，2否
- * @property string|null $value 配置值
- * @property string|null $options 配置选项
- * @property string|null $description 配置说明
+ * @property integer $private 是否私有，1是，2否
+ * @property string $value 配置值
+ * @property string $options 配置选项
+ * @property string $description 配置说明
  */
 class Setting extends \yii\db\ActiveRecord
 {
@@ -47,7 +48,9 @@ class Setting extends \yii\db\ActiveRecord
 	const SETTING_KEY_BAIDU_PAN_APP_KEY = 'baidu_pan_app_key';
 	const SETTING_KEY_BAIDU_PAN_APP_SECRET = 'baidu_pan_app_secret';
 	//站点名称配置
-	const SETTING_KEY_TITLE='title';
+	const SETTING_KEY_TITLE = 'title';
+	//carousel轮播数量配置
+	const CAROUSEL_LIMIT = 'carousel_limit';
 
 	/**
 	 * {@inheritdoc}

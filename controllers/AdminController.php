@@ -7,6 +7,7 @@ namespace app\controllers;
 use app\models\Admin;
 use Yii;
 use yii\base\UserException;
+use yii\web\Cookie;
 
 class AdminController extends RestController
 {
@@ -14,6 +15,7 @@ class AdminController extends RestController
 		'login'
 	];
 	public array $optional = [
+		'auth',
 		'logout'
 	];
 	public array $verbs = [
@@ -71,6 +73,11 @@ class AdminController extends RestController
 		}
 		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
 		$adminAttributes['token'] = $admin->generateAccessToken();
+		Yii::$app->response->cookies->add(new Cookie([
+			'name' => 'AUTHORIZATION_TOKEN',
+			'value' => $adminAttributes['token'],
+			'httpOnly' => true
+		]));
 		return $this->response($adminAttributes, null, 'Login succeed');
 	}
 
