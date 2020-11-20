@@ -25,18 +25,26 @@ abstract class BaseToken extends \yii\base\BaseObject
 		return md5(static::class);
 	}
 
-	public function setCookie($token, $cookieName = null)
+	public function setCookie($token, $cookieName = null, $options = [])
 	{
+		if (is_array($cookieName)) {
+			$options = $cookieName;
+			$cookieName = null;
+		}
 		if (is_null($cookieName)) {
 			$cookieName = $this->getCookieName();
 		}
 		if ($token === '') {
 			\Yii::$app->response->cookies->remove($cookieName);
 		} else {
-			\Yii::$app->response->cookies->add(new Cookie([
+			$cookie = [
 				'name' => $cookieName,
 				'value' => $token
-			]));
+			];
+			if (!empty($options)) {
+				$cookie = ArrayHelper::merge($cookie, $options);
+			}
+			\Yii::$app->response->cookies->add(new Cookie($cookie));
 		}
 	}
 
@@ -46,10 +54,6 @@ abstract class BaseToken extends \yii\base\BaseObject
 			$cookieName = $this->getCookieName();
 		}
 		$request = \Yii::$app->request;
-		if ($request->enableCookieValidation) {
-			return ArrayHelper::getValue($_COOKIE, $cookieName);
-		} else {
-			return $request->getCookies()->getValue($cookieName);
-		}
+		return $request->getCookies()->getValue($cookieName);
 	}
 }

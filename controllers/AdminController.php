@@ -73,11 +73,7 @@ class AdminController extends RestController
 		}
 		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
 		$adminAttributes['token'] = $admin->generateAccessToken();
-		Yii::$app->response->cookies->add(new Cookie([
-			'name' => 'AUTHORIZATION_TOKEN',
-			'value' => $adminAttributes['token'],
-			'httpOnly' => true
-		]));
+		Yii::$app->token->cookie($adminAttributes['token'], ['httpOnly' => true]);
 		return $this->response($adminAttributes, null, 'Login succeed');
 	}
 

@@ -144,11 +144,14 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	/**
 	 * @return string
 	 */
-	public function generateAccessToken()
+	public function generateAccessToken($expiresAt = null)
 	{
 		$data = [
 			'id' => $this->uuid
 		];
+		if (!is_null($expiresAt)) {
+			$data['expiresAt'] = $expiresAt;
+		}
 		return Yii::$app->token->encode($data);
 	}
 

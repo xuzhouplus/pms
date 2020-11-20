@@ -26,6 +26,7 @@ class m200729_060654_create_table_posts extends Migration
 			'sub_title' => $this->string(255)->notNull()->comment('二级标题'),
 			'cover' => $this->string(255)->comment('封面'),
 			'content' => $this->text()->comment('内容'),
+			'status' => $this->integer(1)->notNull()->defaultValue(2)->comment('是否启用，1启用，2禁用'),
 			'created_at' => $this->dateTime()->comment('创建时间'),
 			'updated_at' => $this->dateTime()->comment('更新时间')
 		], $tableOptions);

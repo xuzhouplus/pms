@@ -4,7 +4,7 @@
 namespace app\controllers;
 
 
-use app\behaviors\authenticators\CookieTokenAuth;
+use app\filters\auth\CookieTokenAuth;
 use ReflectionException;
 use ReflectionMethod;
 use Yii;
@@ -27,7 +27,9 @@ class RestController extends ActiveController
 	public $responseOK = 1;
 	public $responseFail = 0;
 
-	public array $authMethods = [];
+	public array $authMethods = [
+		CookieTokenAuth::class
+	];
 	/**
 	 * 不需要认证的方法
 	 * @var string[]

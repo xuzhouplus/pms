@@ -46,4 +46,11 @@ class TokenComponent extends \yii\base\Component
 	{
 		$this->handler->expire($token);
 	}
+
+	public function cookie($token=null,$options=[]){
+		if(is_null($token)){
+			return $this->handler->getCookie();
+		}
+		return $this->handler->setCookie($token,$options);
+	}
 }
