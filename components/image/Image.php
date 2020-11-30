@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\components\carousel;
+namespace app\components\image;
 
 class Image
 {
@@ -23,6 +23,11 @@ class Image
 		if ($file) {
 			$this->analyse($file);
 		}
+	}
+
+	public function __destruct()
+	{
+		$this->file && imagedestroy($this->file);
 	}
 
 	/**
@@ -92,6 +97,15 @@ class Image
 	{
 		$target = imagecreatetruecolor($this->width, $this->height);
 		imagecopyresampled($target, $this->file, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
+		imagedestroy($this->file);
+		$this->file = $target;
+	}
+
+	public function cut($offsetX, $offsetY, $width, $height)
+	{
+		$target = imagecreatetruecolor($this->width, $this->height);
+		imagecopyresampled($target, $this->file, 0, 0, $offsetX, $offsetY, $width, $height, $this->width, $this->height);
+		imagedestroy($this->file);
 		$this->file = $target;
 	}
 

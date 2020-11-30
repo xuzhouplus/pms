@@ -1,57 +1,42 @@
 <?php
 
 
-namespace app\components\carousel;
+namespace app\components\image;
 
 
-class Carousel
+class Carousel extends Image
 {
-	public Image $source;
-	public Image $target;
-	public Image $blur;
-	public int $blurFactor;
+	private Image $source;
+	private Image $target;
+	private Image $blur;
 
-	public function __construct()
+	public function __construct($file = null)
 	{
-		$this->source = new Image();
-		$this->target = new Image();
-		$this->blur = new Image();
-	}
-
-	public function setWidth($width)
-	{
-		$this->target->width = $width;
-	}
-
-	public function setHeight($height)
-	{
-		$this->target->height = $height;
-	}
-
-	public function setExtension($extension)
-	{
-		$this->target->extension = $extension;
-	}
-
-	public function setBlurFactor($blurFactor)
-	{
-		$this->blurFactor = $blurFactor;
-	}
-
-	public function render()
-	{
-		if ($this->source->width == $this->target->width && $this->source->height == $this->target->height) {
-			$this->target->file = $this->source->file;
+		if ($file) {
+			$this->load($file);
 		} else {
-			$targetFile = imagecreatetruecolor($this->target->width, $this->target->height);
-			if ($this->source->width < $this->target->width || $this->source->height < $this->target->height) {
-				$this->blur();
-				imagecopyresampled($targetFile, $this->blur->file, 0, 0, 0, 0, $this->target->width, $this->target->height, $this->source->width, $this->source->height);
+			$this->source = new Image();
+			$this->blur = new Image();
+		}
+	}
+
+	public function render($width = null, $height = null, $extension = null, $factory = null)
+	{
+		$this->width = $width;
+		$this->height = $height;
+		$this->extension = $extension;
+		if ($this->source->width == $this->width && $this->source->height == $this->height) {
+			$this->file = $this->source->file;
+		} else {
+			$targetFile = imagecreatetruecolor($this->target->width, $this->height);
+			if ($this->source->width < $this->width || $this->source->height < $this->height) {
+				$this->blur($factory);
+				imagecopyresampled($targetFile, $this->blur->file, 0, 0, 0, 0, $this->width, $this->height, $this->source->width, $this->source->height);
 			}
-			$targetXOffset = max($this->target->width - $this->source->width, 0);
-			$targetYOffset = max($this->target->height - $this->source->height, 0);
+			$targetXOffset = max($this->width - $this->source->width, 0);
+			$targetYOffset = max($this->height - $this->source->height, 0);
 			imagecopyresampled($targetFile, $this->source->file, $targetXOffset / 2, $targetYOffset / 2, 0, 0, $this->source->width, $this->source->height, $this->source->width, $this->source->height);
-			$this->target->file = $targetFile;
+			$this->file = $targetFile;
 		}
 	}
 
@@ -59,21 +44,21 @@ class Carousel
 	{
 		$this->source = new Image($sourceFile);
 		$this->blur = new Image($sourceFile);
-		$this->target->name = 'carousel_' . str_replace($this->source->extension, $this->target->extension, $this->source->name);
-		$this->target->dir = $this->source->dir;
+		$this->name = 'carousel_' . str_replace($this->source->extension, '', $this->source->name);
+		$this->dir = $this->source->dir;
 	}
 
 	public function write()
 	{
-		$this->target->write();
-		imagedestroy($this->source->file);
-		imagedestroy($this->blur->file);
+		unset($this->source);
+		unset($this->blur);
+		parent::write();
 	}
 
-	private function blur()
+	private function blur($factory = 3)
 	{
 		// blurFactor has to be an integer
-		$blurFactor = round($this->blurFactor);
+		$blurFactor = round($factory);
 		$originalWidth = $this->blur->width;
 		$originalHeight = $this->blur->height;
 		$smallestWidth = ceil($originalWidth * pow(0.5, $blurFactor));

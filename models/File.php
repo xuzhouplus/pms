@@ -18,6 +18,7 @@ use yii\web\UploadedFile;
  * @property integer $id
  * @property string $type 文件类型
  * @property string $name 文件名
+ * @property string $thumb 缩略图
  * @property string $path 文件路径
  * @property integer $width 幅面宽
  * @property integer $height 幅面高
@@ -41,7 +42,7 @@ class File extends \yii\db\ActiveRecord
 		return [
 			[['width', 'height'], 'integer'],
 			[['type'], 'string', 'max' => 32],
-			[['name', 'path', 'description'], 'string', 'max' => 255],
+			[['name', 'thumb', 'path', 'description'], 'string', 'max' => 255],
 		];
 	}
 
@@ -54,6 +55,7 @@ class File extends \yii\db\ActiveRecord
 			'id' => 'ID',
 			'type' => '文件类型',
 			'name' => '文件名',
+			'thumb' => '缩略图',
 			'path' => '文件路径',
 			'width' => '幅面宽',
 			'height' => '幅面高',
@@ -90,7 +92,8 @@ class File extends \yii\db\ActiveRecord
 		$files = $dataProvider->getModels();
 		if (!empty($files)) {
 			foreach ($files as $index => $file) {
-				$files[$index]['path'] = $file->getUrl();
+				$files[$index]['thumb'] = File::getUrl($file->thumb);
+				$files[$index]['path'] = File::getUrl($file->path);
 			}
 		}
 		$pagination = $dataProvider->getPagination();
@@ -115,6 +118,7 @@ class File extends \yii\db\ActiveRecord
 			$uploadRelativePath = DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . str_replace('-', '', Uuid::uuid());
 			$uploadedFile = Yii::$app->upload->save(null, 'file', $uploadRelativePath, true);
 			$this->path = $uploadRelativePath . '.' . $uploadedFile->getExtension();
+			$this->thumb = $this->thumb();
 			$this->save();
 			return $this;
 		} else {
@@ -133,13 +137,19 @@ class File extends \yii\db\ActiveRecord
 		return false;
 	}
 
-	public function getPath()
+	public function thumb()
 	{
-		return str_replace('\\', DIRECTORY_SEPARATOR, Yii::$app->upload->path . $this->path);
+		$thumb = Yii::$app->image->thumb(File::getPath($this->path));
+		return str_replace('\\', '/', str_replace(Yii::$app->upload->path, Yii::$app->upload->host, $thumb->dir . DIRECTORY_SEPARATOR . $thumb->name));
 	}
 
-	public function getUrl()
+	public static function getPath($filePath)
 	{
-		return str_replace(DIRECTORY_SEPARATOR, '/', Yii::$app->upload->host . $this->path);
+		return str_replace('\\', DIRECTORY_SEPARATOR, Yii::$app->upload->path . $filePath);
+	}
+
+	public static function getUrl($filePath)
+	{
+		return str_replace(DIRECTORY_SEPARATOR, '/', Yii::$app->upload->host . $filePath);
 	}
 }

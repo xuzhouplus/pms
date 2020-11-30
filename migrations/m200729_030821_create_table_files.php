@@ -22,6 +22,7 @@ class m200729_030821_create_table_files extends Migration
 			'id' => $this->primaryKey(11),
 			'type' => $this->string(32)->notNull()->comment('文件类型'),
 			'name' => $this->string(255)->notNull()->comment('文件名'),
+			'thumb' => $this->string(255)->notNull()->comment('缩略图'),
 			'path' => $this->string(255)->comment('文件路径'),
 			'width' => $this->integer(11)->comment('幅面宽'),
 			'height' => $this->integer(11)->comment('幅面高'),

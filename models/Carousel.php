@@ -4,6 +4,7 @@ namespace app\models;
 
 use Exception;
 use Faker\Provider\Uuid;
+use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
 use yii\data\ActiveDataProvider;
@@ -305,9 +306,9 @@ class Carousel extends \yii\db\ActiveRecord
 	 */
 	public static function make($file)
 	{
-		$carousel = Yii::$app->image->create(($file instanceof File) ? $file->getPath() : $file, 1920, 1080, 'jpg', 3);
+		$carousel = Yii::$app->image->carousel(($file instanceof File) ? File::getPath($file->path) : $file, 1920, 1080, 'jpg', 3);
 		if ($carousel) {
-			$image = Yii::$app->image->compress($carousel->target->dir . DIRECTORY_SEPARATOR . $carousel->target->name, 60);
+			$image = Yii::$app->image->compress($carousel->dir . DIRECTORY_SEPARATOR . $carousel->name, 60);
 			return str_replace('\\', '/', str_replace(Yii::$app->upload->path, Yii::$app->upload->host, $image->dir . DIRECTORY_SEPARATOR . $image->name));
 		}
 		throw new Exception('fail to make carousel of file:' . $file);

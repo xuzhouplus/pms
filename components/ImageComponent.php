@@ -4,8 +4,9 @@
 namespace app\components;
 
 
-use app\components\carousel\Carousel;
-use app\components\carousel\Image;
+use app\components\image\Carousel;
+use app\components\image\Image;
+use app\components\image\Thumb;
 
 class ImageComponent extends \yii\base\Component
 {
@@ -17,17 +18,46 @@ class ImageComponent extends \yii\base\Component
 	 * @param int $blurFactor
 	 * @return Carousel
 	 */
-	public function create($file, $width = 1920, $height = 1080, $extension = 'jpg', $blurFactor = 4)
+	public function carousel($file, $width = 1920, $height = 1080, $extension = 'jpg', $blurFactor = 4)
 	{
-		$carousel = new Carousel();
-		$carousel->setWidth($width);
-		$carousel->setHeight($height);
-		$carousel->setExtension($extension);
-		$carousel->setBlurFactor($blurFactor);
-		$carousel->load($file);
-		$carousel->render();
+		$carousel = new Carousel($file);
+		$carousel->render($width,$height,$extension,$blurFactor);
 		$carousel->write();
 		return $carousel;
+	}
+
+	/**
+	 * @param $file
+	 * @param int $width
+	 * @param int $height
+	 * @param string $extension
+	 * @return Thumb
+	 * @throws \Exception
+	 */
+	public function thumb($file, $width = 320, $height = 180, $extension = 'jpg')
+	{
+		$thumb = new Thumb($file);
+		$thumb->render($width, $height, $extension);
+		$thumb->write();
+		return $thumb;
+	}
+
+	/**
+	 * @param $file
+	 * @param int $offsetTop
+	 * @param int $offsetLeft
+	 * @param int $width
+	 * @param int $height
+	 * @param string $extension
+	 * @return Image
+	 * @throws \Exception
+	 */
+	public function cut($file, $offsetTop = 0, $offsetLeft = 0, $width = 320, $height = 180, $extension = 'jpg')
+	{
+		$image = new Image($file);
+		$image->cut($offsetTop, $offsetLeft, $width, $height, $extension);
+		$image->write();
+		return $image;
 	}
 
 	/**
