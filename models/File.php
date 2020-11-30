@@ -118,7 +118,7 @@ class File extends \yii\db\ActiveRecord
 			$uploadRelativePath = DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . str_replace('-', '', Uuid::uuid());
 			$uploadedFile = Yii::$app->upload->save(null, 'file', $uploadRelativePath, true);
 			$this->path = $uploadRelativePath . '.' . $uploadedFile->getExtension();
-			$this->thumb = $this->thumb();
+			$this->thumb = $this->makeThumb();
 			$this->save();
 			return $this;
 		} else {
@@ -127,7 +127,7 @@ class File extends \yii\db\ActiveRecord
 		}
 	}
 
-	public function remove()
+	public function removeFile()
 	{
 		$uploadedFilePath = str_replace('/', DIRECTORY_SEPARATOR, Yii::$app->upload->path . $this->path);
 		if (file_exists($uploadedFilePath)) {
@@ -137,10 +137,18 @@ class File extends \yii\db\ActiveRecord
 		return false;
 	}
 
-	public function thumb()
+	public function makeThumb()
 	{
 		$thumb = Yii::$app->image->thumb(File::getPath($this->path));
-		return str_replace('\\', '/', str_replace(Yii::$app->upload->path, Yii::$app->upload->host, $thumb->dir . DIRECTORY_SEPARATOR . $thumb->name));
+		return $thumb->dir . DIRECTORY_SEPARATOR . $thumb->name;
+	}
+
+	public function removeThumb()
+	{
+		$thumbPath = File::getPath($this->thumb);
+		if (file_exists($thumbPath)) {
+			@unlink($thumbPath);
+		}
 	}
 
 	public static function getPath($filePath)

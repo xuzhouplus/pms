@@ -30,7 +30,8 @@ class FileController extends RestController
 	{
 		$file = File::find()->where(['id' => \Yii::$app->request->getBodyParam('id')])->limit(1)->one();
 		if ($file) {
-			$file->remove();
+			$file->removeFile();
+			$file->removeThumb();
 			$file->delete();
 		}
 		return $this->response(null, 'Delete succeed');
