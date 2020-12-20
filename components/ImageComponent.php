@@ -34,7 +34,7 @@ class ImageComponent extends \yii\base\Component
 	 * @return Thumb
 	 * @throws \Exception
 	 */
-	public function thumb($file, $width = 320, $height = 180, $extension = 'jpg')
+	public function thumb($file, $width = 320, $height = 180, $extension = 'png')
 	{
 		$thumb = new Thumb($file);
 		$thumb->render($width, $height, $extension);

@@ -27,7 +27,7 @@ class Image
 
 	public function __destruct()
 	{
-		$this->file && imagedestroy($this->file);
+		$this->file && @imagedestroy($this->file);
 	}
 
 	/**
@@ -57,6 +57,7 @@ class Image
 		$this->extension = $sourceFilePathInfo['extension'];
 		switch (strtolower($this->extension)) {
 			case 'jpg':
+			case 'jpeg':
 				$this->file = imagecreatefromjpeg($file);
 				break;
 			case 'webp':
@@ -78,10 +79,12 @@ class Image
 		$fileName = $fileName . '_' . $this->width . '_' . $this->height . '_' . $this->quality . '.' . $this->extension;
 		switch ($this->extension) {
 			case 'jpg':
+			case 'jpeg':
 				imagejpeg($this->file, $this->dir . DIRECTORY_SEPARATOR . $fileName, $this->quality);
 				break;
 			case 'png':
-				imagepng($this->file, $this->dir . DIRECTORY_SEPARATOR . $fileName, $this->quality);
+				imagesavealpha($this->file, true);
+				imagepng($this->file, $this->dir . DIRECTORY_SEPARATOR . $fileName, min(ceil($this->quality / 100), 10));
 				break;
 			case 'webp':
 				imagewebp($this->file, $this->dir . DIRECTORY_SEPARATOR . $fileName, $this->quality);
@@ -96,6 +99,9 @@ class Image
 	public function resize($width, $height)
 	{
 		$target = imagecreatetruecolor($this->width, $this->height);
+		$tagWhite = imagecolorallocate($target, 255, 255, 255);
+		imagefill($target, 0, 0, $tagWhite);
+		imagecolortransparent($target, $tagWhite);
 		imagecopyresampled($target, $this->file, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
 		imagedestroy($this->file);
 		$this->file = $target;
@@ -104,6 +110,9 @@ class Image
 	public function cut($offsetX, $offsetY, $width, $height)
 	{
 		$target = imagecreatetruecolor($this->width, $this->height);
+		$tagWhite = imagecolorallocate($target, 255, 255, 255);
+		imagefill($target, 0, 0, $tagWhite);
+		imagecolortransparent($target, $tagWhite);
 		imagecopyresampled($target, $this->file, 0, 0, $offsetX, $offsetY, $width, $height, $this->width, $this->height);
 		imagedestroy($this->file);
 		$this->file = $target;
@@ -116,6 +125,9 @@ class Image
 
 	public function convert($extension)
 	{
+		$tagWhite = imagecolorallocate($this->file, 255, 255, 255);
+		imagefill($this->file, 0, 0, $tagWhite);
+		imagecolortransparent($this->file, $tagWhite);
 		$this->extension = $extension;
 	}
 }

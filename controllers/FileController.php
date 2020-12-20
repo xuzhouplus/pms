@@ -21,7 +21,7 @@ class FileController extends RestController
 		$file->load(\Yii::$app->request->post(), '');
 		$file->upload();
 		$data = $file->getAttributes();
-		$data['url'] = $file->getUrl();
+		$data['url'] = File::getUrl($file->path);
 		unset($data['path']);
 		return $this->response($data, 'Upload succeed');
 	}
@@ -31,6 +31,7 @@ class FileController extends RestController
 		$file = File::find()->where(['id' => \Yii::$app->request->getBodyParam('id')])->limit(1)->one();
 		if ($file) {
 			$file->removeFile();
+			$file->removePreview();
 			$file->removeThumb();
 			$file->delete();
 		}

@@ -19,6 +19,7 @@ use yii\web\UploadedFile;
  * @property string $type 文件类型
  * @property string $name 文件名
  * @property string $thumb 缩略图
+ * @property string $preview 预览图
  * @property string $path 文件路径
  * @property integer $width 幅面宽
  * @property integer $height 幅面高
@@ -94,6 +95,7 @@ class File extends \yii\db\ActiveRecord
 			foreach ($files as $index => $file) {
 				$files[$index]['thumb'] = File::getUrl($file->thumb);
 				$files[$index]['path'] = File::getUrl($file->path);
+				$files[$index]['preview'] = File::getUrl($file->preview);
 			}
 		}
 		$pagination = $dataProvider->getPagination();
@@ -118,6 +120,7 @@ class File extends \yii\db\ActiveRecord
 			$uploadRelativePath = DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . str_replace('-', '', Uuid::uuid());
 			$uploadedFile = Yii::$app->upload->save(null, 'file', $uploadRelativePath, true);
 			$this->path = $uploadRelativePath . '.' . $uploadedFile->getExtension();
+			$this->preview = $this->makePreview();
 			$this->thumb = $this->makeThumb();
 			$this->save();
 			return $this;
@@ -140,12 +143,28 @@ class File extends \yii\db\ActiveRecord
 	public function makeThumb()
 	{
 		$thumb = Yii::$app->image->thumb(File::getPath($this->path));
-		return $thumb->dir . DIRECTORY_SEPARATOR . $thumb->name;
+		$thumbPath = $thumb->dir . DIRECTORY_SEPARATOR . $thumb->name;
+		return str_replace(Yii::$app->upload->path, "", $thumbPath);
+	}
+
+	public function makePreview()
+	{
+		$preview = Yii::$app->image->compress(File::getPath($this->path), 62);
+		$previewPath = $preview->dir . DIRECTORY_SEPARATOR . $preview->name;
+		return str_replace(Yii::$app->upload->path, "", $previewPath);
 	}
 
 	public function removeThumb()
 	{
 		$thumbPath = File::getPath($this->thumb);
+		if (file_exists($thumbPath)) {
+			@unlink($thumbPath);
+		}
+	}
+
+	public function removePreview()
+	{
+		$thumbPath = File::getPath($this->preview);
 		if (file_exists($thumbPath)) {
 			@unlink($thumbPath);
 		}
