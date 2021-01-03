@@ -21,8 +21,7 @@ class FileController extends RestController
 		$file->load(\Yii::$app->request->post(), '');
 		$file->upload();
 		$data = $file->getAttributes();
-		$data['url'] = File::getUrl($file->path);
-		unset($data['path']);
+		$data['path'] = File::getUrl($file->path);
 		return $this->response($data, 'Upload succeed');
 	}
 

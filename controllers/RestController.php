@@ -157,7 +157,7 @@ class RestController extends ActiveController
 			$exception = new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
 		}
 		if ($exception instanceof UserException) {
-			Yii::$app->response->setStatusCode(400);
+			Yii::$app->response->setStatusCode(200);
 		}
 		return $errorhandler->convertExceptionToArray($exception);
 	}
