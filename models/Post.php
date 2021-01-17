@@ -53,7 +53,7 @@ class Post extends \yii\db\ActiveRecord
                 'class' => AttributeBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
-                    self::EVENT_BEFORE_UPDATE => 'updated_at'
+                    ActiveRecord::EVENT_BEFORE_UPDATE => 'updated_at'
                 ],
                 'value' => function ($event) {
                     return date('Y-m-d H:i:s');
@@ -68,7 +68,7 @@ class Post extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title', 'sub_title', 'cover'], 'required'],
+            [['title', 'sub_title', 'cover'], 'required', 'on' => ['create', 'update']],
             [['content'], 'string'],
             [['uuid'], 'string', 'max' => 32],
             [['created_at', 'updated_at'], 'safe'],
@@ -98,7 +98,15 @@ class Post extends \yii\db\ActiveRecord
         ];
     }
 
-    public static function list($page = 0, $limit = 10, $select = [], $like = '', $enable = null)
+    /**
+     * @param int $page
+     * @param int $limit
+     * @param array $select
+     * @param string $like
+     * @param null $enable
+     * @return array
+     */
+    public static function list($page = null, $limit = 10, $select = [], $like = '', $enable = null)
     {
         $query = Post::find();
         if ($select) {
@@ -110,22 +118,23 @@ class Post extends \yii\db\ActiveRecord
         if (!is_numeric($enable)) {
             $query->andFilterWhere(['status' => $enable]);
         }
-        $pagination = [
-            'page' => $page,
-            'pageSize' => $limit,
-        ];
+        $query->orderBy(['updated_at' => SORT_DESC]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'pagination' => $pagination,
+            'pagination' => [
+                'page' => $page,
+                'pageSize' => $limit,
+            ]
         ]);
+        //$posts = ;
         $pagination = $dataProvider->getPagination();
         return [
+            'posts' => $dataProvider->getModels(),
             'size' => $pagination->getPageSize(),
             'count' => $pagination->getPageCount(),
             'page' => $pagination->getPage(),
             'total' => $pagination->totalCount,
             'offset' => $pagination->getOffset(),
-            'posts' => $dataProvider->getModels(),
         ];
     }
 
@@ -148,17 +157,22 @@ class Post extends \yii\db\ActiveRecord
     }
 
     /**
-     * 新建或编辑
+     * 新建
      * @param $data
      * @return Post|array|ActiveRecord
      * @throws UserException
      */
-    public static function set($data)
+    public static function savePost($data)
     {
         if (!empty($data['id'])) {
             $post = Post::find()->where(['id' => $data['id']])->limit(1)->one();
+            if (empty($post)) {
+                throw new \Exception('文稿不存在');
+            }
+            $post->setScenario('update');
         } else {
             $post = new Post();
+            $post->setScenario('create');
         }
         $post->load($data, '');
         if ($post->save()) {
@@ -166,5 +180,22 @@ class Post extends \yii\db\ActiveRecord
         }
         $errors = $post->getFirstErrors();
         throw new UserException(reset($errors));
+    }
+
+    /**
+     * 修改状态
+     * @param $id
+     * @return Post|array|ActiveRecord
+     * @throws \Exception
+     */
+    public static function toggleStatus($id)
+    {
+        $post = Post::find()->where(['id' => $id])->limit(1)->one();
+        if (empty($post)) {
+            throw new \Exception('文稿不存在');
+        }
+        $post->status = ($post->status == self::STATUS_ENABLED ? self::STATUS_DISABLED : self::STATUS_ENABLED);
+        $post->save();
+        return $post;
     }
 }

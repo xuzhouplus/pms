@@ -10,13 +10,14 @@ use yii\base\UserException;
 class PostController extends RestController
 {
     public array $except = [
-        'index'
+        'index',
+        'detail'
     ];
 
     public function actionIndex()
     {
         $request = \Yii::$app->request;
-        $posts = Post::list($request->getQueryParam('page'), $request->getQueryParam('limit'), ['uuid', 'title', 'sub_title', 'created_at', 'updated_at'], $request->getQueryParam('search'), true);
+        $posts = Post::list($request->getQueryParam('page'), $request->getQueryParam('limit'), ['uuid', 'cover', 'title', 'sub_title', 'created_at', 'updated_at'], $request->getQueryParam('search'), true);
         return $this->response($posts);
     }
 
@@ -27,10 +28,35 @@ class PostController extends RestController
         return $this->response($posts);
     }
 
+    public function actionInfo()
+    {
+        $request = \Yii::$app->request;
+        $post = Post::findOneById($request->getQueryParam('id'));
+        if ($post) {
+            return $this->response($post);
+        }
+        throw new UserException('文稿不存在');
+    }
+
+    public function actionDetail()
+    {
+        $request = \Yii::$app->request;
+        $id = $request->getQueryParam('id');
+        if (strlen($id) == 32) {
+            $post = Post::findOneByUuid($id);
+        } else {
+            $post = Post::findOneById($id);
+        }
+        if ($post) {
+            return $this->response($post);
+        }
+        throw new UserException('文稿不存在');
+    }
+
     public function actionSave()
     {
         $request = \Yii::$app->request;
-        $post = Post::set($request->getBodyParams());
+        $post = Post::savePost($request->getBodyParams());
         return $this->response($post);
     }
 
@@ -45,5 +71,15 @@ class PostController extends RestController
             throw new \Exception('删除失败');
         }
         throw new UserException('文稿不存在');
+    }
+
+    public function actionToggleStatus()
+    {
+        $request = \Yii::$app->request;
+        $post = Post::toggleStatus($request->getBodyParam('id'));
+        if ($post) {
+            return $this->response($post);
+        }
+        throw new UserException('修改失败');
     }
 }
