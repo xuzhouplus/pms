@@ -3,7 +3,11 @@
 namespace app\controllers;
 
 use app\helpers\Response;
+use app\models\AlipaySetting;
+use app\models\BaiduPanSetting;
+use app\models\CarouselSetting;
 use app\models\Setting;
+use app\models\SiteSetting;
 use yii\helpers\ArrayHelper;
 
 class SettingController extends RestController
@@ -41,5 +45,29 @@ class SettingController extends RestController
 	{
 		Setting::del(\Yii::$app->request->getBodyParam('key'));
 		return $this->response(null, null, 'Setting delete succeed');
+	}
+
+	public function actionCarousel()
+	{
+		$settings = CarouselSetting::find()->all();
+		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
+	}
+
+	public function actionBaiduPan()
+	{
+		$settings = BaiduPanSetting::find()->all();
+		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
+	}
+
+	public function actionAlipay()
+	{
+		$settings = AlipaySetting::find()->all();
+		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
+	}
+
+	public function actionSite()
+	{
+		$settings = SiteSetting::find()->all();
+		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
 	}
 }

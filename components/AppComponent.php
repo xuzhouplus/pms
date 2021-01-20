@@ -4,6 +4,7 @@
 namespace app\components;
 
 use app\models\Setting;
+use app\models\SiteSetting;
 use Yii;
 use yii\base\Component;
 use yii\base\UserException;
@@ -59,6 +60,6 @@ class AppComponent extends Component
 	 */
 	public function isUnderMaintenance()
 	{
-		return $this->setting(Setting::SETTING_KEY_MAINTAIN) == Setting::MAINTAIN_TRUE;
+		return $this->setting(SiteSetting::SETTING_KEY_MAINTAIN) == SiteSetting::MAINTAIN_TRUE;
 	}
 }

@@ -4,7 +4,7 @@
 namespace app\components\token;
 
 
-use app\models\Setting;
+use app\models\SiteSetting;
 use Exception;
 use Faker\Provider\Uuid;
 use Lcobucci\JWT\Configuration;
@@ -23,10 +23,10 @@ class JwtToken extends BaseToken
 
 	public function init()
 	{
-		$secret = Yii::$app->app->setting(Setting::SETTING_KEY_ENCRYPT_SECRET);
+		$secret = Yii::$app->app->setting(SiteSetting::SETTING_KEY_ENCRYPT_SECRET);
 		$this->configuration = Configuration::forSymmetricSigner(new Sha256(), new Key($secret));
-		$this->duration = Yii::$app->app->setting(Setting::SETTING_KEY_LOGIN_DURATION);
-		$this->issuedBy = Yii::$app->app->setting(Setting::SETTING_KEY_TITLE);
+		$this->duration = Yii::$app->app->setting(SiteSetting::SETTING_KEY_LOGIN_DURATION);
+		$this->issuedBy = Yii::$app->app->setting(SiteSetting::SETTING_KEY_TITLE);
 	}
 
 	/**

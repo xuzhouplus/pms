@@ -29,28 +29,11 @@ class Setting extends \yii\db\ActiveRecord
 	const TYPE_SELECT = 'select';
 	const TYPE_MULTI_SELECT = 'multiSelect';
 	const TYPE_TEXTAREA = 'textarea';
-	//缓存键名
-	const SETTINGS_CACHE_KEY = 'settings_cache';
+
 	//私有
 	const PRIVATE_SETTING = 1;
 	//公开
 	const PUBLIC_SETTING = 2;
-	//维护状态
-	const MAINTAIN_TRUE = 'true';
-	const MAINTAIN_FALSE = 'false';
-	//加密密钥配置项标识
-	const SETTING_KEY_ENCRYPT_SECRET = 'encrypt_secret';
-	//登录token有效时长，单位s
-	const SETTING_KEY_LOGIN_DURATION = 'login_duration';
-	//服务维护
-	const SETTING_KEY_MAINTAIN = 'maintain';
-	//百度网盘配置
-	const SETTING_KEY_BAIDU_PAN_APP_KEY = 'baidu_pan_app_key';
-	const SETTING_KEY_BAIDU_PAN_APP_SECRET = 'baidu_pan_app_secret';
-	//站点名称配置
-	const SETTING_KEY_TITLE = 'title';
-	//carousel轮播数量配置
-	const CAROUSEL_LIMIT = 'carousel_limit';
 
 	/**
 	 * {@inheritdoc}

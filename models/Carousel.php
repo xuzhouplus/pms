@@ -188,7 +188,7 @@ class Carousel extends \yii\db\ActiveRecord
      */
     public static function create($data)
     {
-        if (Carousel::find()->count('id') == Setting::getSetting(Setting::CAROUSEL_LIMIT)) {
+        if (Carousel::find()->count('id') == \Yii::$app->app->setting(CarouselSetting::SETTING_KEY_CAROUSEL_LIMIT)) {
             throw new UserException('The carousels number is reached limit');
         }
         /**

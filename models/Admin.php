@@ -3,9 +3,6 @@
 namespace app\models;
 
 use Faker\Provider\Uuid;
-use Lcobucci\JWT\Parser;
-use Lcobucci\JWT\Signer\Hmac\Sha256;
-use Lcobucci\JWT\Signer\Key;
 use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
@@ -179,7 +176,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	{
 		$authAdmin = Yii::$app->cache->get(self::AUTH_KEY_CACHE_KEY . ':' . $authKey);
 		if ($authAdmin && $authAdmin['id'] == $this->uuid) {
-			$loginDuration = Yii::$app->app->setting(Setting::SETTING_KEY_LOGIN_DURATION);
+			$loginDuration = Yii::$app->app->setting(SiteSetting::SETTING_KEY_LOGIN_DURATION);
 			if ($authAdmin['issued'] + $loginDuration > time()) {
 				return true;
 			}
