@@ -103,4 +103,28 @@ class AdminController extends RestController
 		}
 		return $this->response(null, null, 'Logout succeed');
 	}
+
+	/**
+	 * @return array
+	 * @throws \yii\base\Exception
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionAuthorize()
+	{
+		$request = Yii::$app->request;
+		$authorizeUrl = Admin::getAuthorizeUrl($request->getQueryParam('type'), $request->getQueryParam('scope'));
+		return $this->response($authorizeUrl, null, 'Logout succeed');
+	}
+
+	/**
+	 * @return array
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionConnect()
+	{
+		$request = Yii::$app->request;
+		$type = $request->getQueryParam('type');
+		$authorizeUrl = Admin::getAuthorizeUser($type, Yii::$app->oauth2->getGrantType($type, 'authorization_code'));
+		return $this->response($authorizeUrl, null, 'Logout succeed');
+	}
 }

@@ -78,7 +78,10 @@ $config = [
         ],
         'image' => [
             'class' => 'app\components\ImageComponent'
-        ]
+        ],
+	    'oauth2'=>[
+	    	'class'=>'app\components\oauth2\Oauth2Component'
+	    ]
     ],
     'modules' => [
     ],

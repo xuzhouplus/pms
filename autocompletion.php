@@ -26,6 +26,7 @@ class Yii extends \yii\BaseYii
  * @property \app\components\TokenComponent $token
  * @property \app\components\UploadComponent $upload
  * @property \app\components\ImageComponent $image
+ * @property \app\components\oauth2\Oauth2Component $oauth2
  */
 abstract class BaseApplication extends yii\base\Application
 {

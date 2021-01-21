@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use Faker\Provider\Uuid;
+use app\components\oauth2\AuthorizeUser;
 use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
@@ -262,12 +262,22 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	{
 		$admin = Admin::findIdentity($id, false);
 		if ($admin) {
-			if ($admin->delete()) {
-				return;
+			$transaction = Admin::getDb()->beginTransaction();
+			try {
+				if ($admin->delete()) {
+					if (Connect::batchUnbind($admin->id)) {
+						$transaction->commit();
+						return;
+					}
+					throw new \Exception('删除第三方绑定失败');
+				}
+				throw new UserException('删除识别');
+			} catch (\Exception $exception) {
+				$transaction->rollBack();
+				throw $exception;
 			}
-			throw new UserException('Delete failed');
 		}
-		throw new UserException('Admin is not exist');
+		throw new UserException('账号不存在');
 	}
 
 	/**
@@ -283,19 +293,70 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 		 */
 		$admin = Admin::find()->where(['account' => $account, 'status' => Admin::STATUS_ENABLED])->limit(1)->one();
 		if (empty($admin)) {
-			throw new UserException('Account is wrong');
+			throw new UserException('账号错误');
 		}
 		if ($admin->validatePassword($password)) {
 			return $admin;
 		}
-		throw new UserException('Account or password is wrong');
+		throw new UserException('账号或密码错误');
 	}
 
-	public function deleteConnects()
+	/**
+	 * 获取授权跳转地址
+	 * @param $type
+	 * @param $scope
+	 * @return string
+	 * @throws \yii\base\Exception
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public static function getAuthorizeUrl($type, $scope)
 	{
-
+		$redirect = Yii::$app->params['hostDomain'] . '/admin/connect/' + strtolower($type);
+		$state = base64_encode(Yii::$app->security->generateRandomString());
+		return Yii::$app->oauth2->getAuthorizeUrl($type, $scope, $redirect, $state);
 	}
 
+	/**
+	 * 获取授权用户信息
+	 * @param $type
+	 * @param $grantType
+	 * @return AuthorizeUser
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public static function getAuthorizeUser($type, $grantType)
+	{
+		return Yii::$app->oauth2->getUserInfo($type, $grantType);
+	}
+
+	/**
+	 * @param AuthorizeUser $authorizeUser
+	 * @return Connect
+	 * @throws \Exception
+	 */
+	public function bindConnect(AuthorizeUser $authorizeUser): Connect
+	{
+		return Connect::bind([
+			'admin_id' => $this->id,
+			'avatar' => $authorizeUser->avatar,
+			'account' => $authorizeUser->nickname,
+			'open_id' => $authorizeUser->open_id,
+			'type' => $authorizeUser->type
+		]);
+	}
+
+	/**
+	 * @return bool
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public function unbindConnect($connectId): bool
+	{
+		return Connect::unbind($this->id, $connectId);
+	}
+
+	/**
+	 * @param bool $save
+	 */
 	public function disable($save = true)
 	{
 		$this->status = Admin::STATUS_DISABLED;
@@ -304,6 +365,9 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 		}
 	}
 
+	/**
+	 * @param bool $save
+	 */
 	public function enable($save = true)
 	{
 		$this->status = Admin::STATUS_ENABLED;

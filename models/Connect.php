@@ -20,6 +20,11 @@ use Yii;
  */
 class Connect extends \yii\db\ActiveRecord
 {
+	const CONNECT_TYPE_ALIPAY = 'alipay';
+	const CONNECT_TYPE_WECHAT = 'wechat';
+	const CONNECT_TYPE_WEIBO = 'weibo';
+	const CONNECT_TYPE_QQ = 'qq';
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -60,12 +65,47 @@ class Connect extends \yii\db\ActiveRecord
 		];
 	}
 
-	public static function add()
+	/**
+	 * @param $data
+	 * @return Connect
+	 * @throws \Exception
+	 */
+	public static function bind($data): Connect
 	{
-
+		$connect = new Connect();
+		$connect->load($data, '');
+		if ($connect->save()) {
+			return $connect;
+		}
+		$errors = $connect->getFirstErrors();
+		throw new \Exception(reset($errors));
 	}
 
-	public static function del($admin)
+	/**
+	 * 解绑
+	 * @param $admin
+	 * @param $connectId
+	 * @return bool|int
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public static function unbind($admin, $connectId)
+	{
+		$connect = Connect::find()->where(['admin_id' => $admin, 'id' => $connectId])->one();
+		if ($connect) {
+			return $connect->delete();
+		}
+		return true;
+	}
+
+	/**
+	 * 批量解绑
+	 * @param $admin
+	 * @return bool
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public static function batchUnbind($admin): bool
 	{
 		/**
 		 * @var $connects Connect[]
@@ -79,10 +119,5 @@ class Connect extends \yii\db\ActiveRecord
 			$connect->delete();
 		}
 		return true;
-	}
-
-	public function unbind()
-	{
-
 	}
 }
