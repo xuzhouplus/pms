@@ -20,7 +20,8 @@ class AppComponent extends Component
 	public function init()
 	{
 		$this->installLock();
-		$this->settings = Setting::getSettings();
+		$settings = Setting::getSettings();
+		$this->settings = array_merge($settings, Yii::$app->params);
 		if ($this->isUnderMaintenance()) {
 			throw new UserException('The server is under maintenance');
 		}

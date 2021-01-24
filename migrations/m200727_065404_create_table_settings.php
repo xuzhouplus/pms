@@ -24,7 +24,7 @@ class m200727_065404_create_table_settings extends Migration
 			'name' => $this->string(255)->notNull()->unique()->comment('配置名称'),
 			'type' => $this->string(10)->notNull()->defaultValue('input')->comment('配置类型，input输入框，radio单选框，checkbox复选框，select下拉选择，multiSelect多选下拉选择，textarea文本域'),
 			'private' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('是否私有，1是，2否'),
-			'value' => $this->string(255)->comment('配置值'),
+			'value' => $this->text()->comment('配置值'),
 			'options' => $this->string(255)->comment('配置选项'),
 			'description' => $this->string(255)->comment('配置说明')
 		], $tableOptions);
@@ -79,14 +79,6 @@ class m200727_065404_create_table_settings extends Migration
 				'type' => \app\models\Setting::TYPE_INPUT,
 				'private' => \app\models\Setting::PUBLIC_SETTING,
 				'value' => '',
-				'options' => ''
-			],
-			[
-				'key' => 'encrypt_secret',
-				'name' => '加密密钥',
-				'type' => \app\models\Setting::TYPE_INPUT,
-				'private' => \app\models\Setting::PRIVATE_SETTING,
-				'value' => Yii::$app->security->generateRandomString(),
 				'options' => ''
 			],
 			[

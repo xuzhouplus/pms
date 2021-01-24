@@ -3,13 +3,13 @@
 namespace app\models;
 
 use app\components\oauth2\AuthorizeUser;
+use app\helpers\RsaHelper;
 use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\Expression;
-use yii\web\IdentityInterface;
 
 /**
  * This is the model class for table "{{%admins}}".
@@ -25,7 +25,7 @@ use yii\web\IdentityInterface;
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
  */
-class Admin extends \yii\db\ActiveRecord implements IdentityInterface
+class Admin extends \yii\db\ActiveRecord
 {
 	//用于保存认证用户的token
 	public $token;
@@ -49,7 +49,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 		return [
 			'timestamp' => [
 				'class' => TimestampBehavior::class,
-				'value' => new Expression('NOW()')
+				'value' => date('Y-m-d H:i:s')
 			],
 			'uuid' => [
 				'class' => AttributeBehavior::class,
@@ -103,16 +103,20 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 
 	/**
 	 * @param int|string $id
+	 * @param array $select
 	 * @param bool $enabled
 	 * @return Admin
 	 */
-	public static function findIdentity($id, $enabled = true)
+	public static function findOneById($id, $select = [], $enabled = true)
 	{
 		$query = Admin::find();
 		if (is_numeric($id)) {
 			$query->where(['id' => $id]);
 		} else {
 			$query->where(['uuid' => $id]);
+		}
+		if ($select) {
+			$query->select($select);
 		}
 		if ($enabled) {
 			$query->andWhere(['status' => Admin::STATUS_ENABLED]);
@@ -121,67 +125,37 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	}
 
 	/**
-	 * @param mixed $token
-	 * @param null $type
-	 * @return Admin|null
+	 * @param array $extraData
+	 * @param null $expiresAt
+	 * @return array
 	 */
-	public static function findIdentityByAccessToken($token, $type = null)
-	{
-		$data = Yii::$app->token->decode($token);
-		if ($data) {
-			$identity = self::findIdentity($data['id']);
-			if ($identity) {
-				$identity->token = $token;
-				return $identity;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function generateAccessToken($expiresAt = null)
+	public function generateAccessToken($extraData = [], $expiresAt = null): array
 	{
 		$data = [
 			'id' => $this->uuid
 		];
+		$data = array_merge($data, $extraData);
 		if (!is_null($expiresAt)) {
 			$data['expiresAt'] = $expiresAt;
 		}
 		return Yii::$app->token->encode($data);
 	}
 
-	public function getId()
+	/**
+	 * @return mixed
+	 */
+	public function getRsaPublicKey()
 	{
-		return $this->uuid;
-	}
-
-	public function getAuthKey()
-	{
-		$authKey = Yii::$app->security->generateRandomKey();
-		Yii::$app->cache->set(self::AUTH_KEY_CACHE_KEY . ':' . $authKey, [
-			'id' => $this->uuid,
-			'issued' => time()
-		]);
-		return $authKey;
+		return Yii::$app->security->decryptByKey($this->rsaKey['publicKey'], Yii::$app->app->setting('security.encryptSecret'));
 	}
 
 	/**
-	 * @param string $authKey
-	 * @return bool
+	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function validateAuthKey($authKey)
+	public function getRsaPrivateKey()
 	{
-		$authAdmin = Yii::$app->cache->get(self::AUTH_KEY_CACHE_KEY . ':' . $authKey);
-		if ($authAdmin && $authAdmin['id'] == $this->uuid) {
-			$loginDuration = Yii::$app->app->setting(SiteSetting::SETTING_KEY_LOGIN_DURATION);
-			if ($authAdmin['issued'] + $loginDuration > time()) {
-				return true;
-			}
-		}
-		return false;
+		return Yii::$app->security->decryptByKey($this->rsaKey['privateKey'], Yii::$app->app->setting('security.encryptSecret'));;
 	}
 
 	/**
@@ -189,11 +163,11 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @return bool
 	 * @throws UserException
 	 */
-	public function validatePassword($password)
+	public function validatePassword($password): bool
 	{
-		$privateKey = openssl_get_privatekey(file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem'));
-		$rsaDecrypt = openssl_private_decrypt(base64_decode($password), $decrypted, $privateKey);
-		if ($rsaDecrypt) {
+		$privateKey = file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem');
+		$decrypted = RsaHelper::privateDecode($password, $privateKey, true);
+		if ($decrypted) {
 			$password = $decrypted;
 		} else {
 			throw new UserException('Password is incredible');
@@ -215,7 +189,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @return Admin
 	 * @throws UserException|\yii\base\Exception
 	 */
-	public static function add($data)
+	public static function add($data): Admin
 	{
 		$exist = Admin::find()->where(['account' => $data['account']])->limit(1)->one();
 		if ($exist) {
@@ -236,12 +210,37 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @return Admin
 	 * @throws UserException|\yii\base\Exception
 	 */
-	public static function edit($data)
+	public static function edit($data): Admin
 	{
-		$admin = Admin::findIdentity($data['id'] ?? $data['uuid'], false);
+		$admin = Admin::findOneById($data['id'] ?? $data['uuid'], [], false);
 		if ($admin) {
+			if (empty($data['password'])) {
+				unset($data['password']);
+			} else {
+				$privateKey = file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem');
+				$decrypted = RsaHelper::privateDecode($data['password'], $privateKey, true);
+				if ($decrypted) {
+					$data['password'] = $decrypted;
+				} else {
+					throw new UserException('Password is incredible');
+				}
+			}
+			if (!empty($data['avatar'])) {
+				if (!empty($admin->avatar)) {
+					$avatar = Yii::$app->upload->urlToPath($admin->avatar);
+					if (file_exists($avatar)) {
+						unlink($avatar);
+					}
+				}
+				$filePath = Yii::$app->upload->saveBase64($data['avatar'], DIRECTORY_SEPARATOR . 'avatar' . DIRECTORY_SEPARATOR . $admin->uuid);
+				$data['avatar'] = Yii::$app->upload->pathToUrl($filePath);
+			} else {
+				unset($data['avatar']);
+			}
 			$admin->load($data, '');
-			$admin->setPassword($admin->password);
+			if(!empty($data['password'])) {
+				$admin->setPassword($admin->password);
+			}
 			if ($admin->save()) {
 				return $admin;
 			}
@@ -260,7 +259,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 */
 	public static function del($id)
 	{
-		$admin = Admin::findIdentity($id, false);
+		$admin = Admin::findOneById($id, [], false);
 		if ($admin) {
 			$transaction = Admin::getDb()->beginTransaction();
 			try {
@@ -286,7 +285,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @return Admin
 	 * @throws \Exception
 	 */
-	public static function login($account, $password)
+	public static function login($account, $password): Admin
 	{
 		/**
 		 * @var $admin Admin
@@ -309,9 +308,9 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @throws \yii\base\Exception
 	 * @throws \yii\base\InvalidConfigException
 	 */
-	public static function getAuthorizeUrl($type, $scope)
+	public static function getAuthorizeUrl($type, $scope): string
 	{
-		$redirect = Yii::$app->params['hostDomain'] . '/admin/connect/' + strtolower($type);
+		$redirect = Yii::$app->params['hostDomain'] . '/backend/admin/connect/' . strtolower($type);
 		$state = base64_encode(Yii::$app->security->generateRandomString());
 		return Yii::$app->oauth2->getAuthorizeUrl($type, $scope, $redirect, $state);
 	}
@@ -323,7 +322,7 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 	 * @return AuthorizeUser
 	 * @throws \yii\base\InvalidConfigException
 	 */
-	public static function getAuthorizeUser($type, $grantType)
+	public static function getAuthorizeUser($type, $grantType): AuthorizeUser
 	{
 		return Yii::$app->oauth2->getUserInfo($type, $grantType);
 	}
@@ -339,12 +338,13 @@ class Admin extends \yii\db\ActiveRecord implements IdentityInterface
 			'admin_id' => $this->id,
 			'avatar' => $authorizeUser->avatar,
 			'account' => $authorizeUser->nickname,
-			'open_id' => $authorizeUser->open_id,
+			'union_id' => $authorizeUser->union_id,
 			'type' => $authorizeUser->type
 		]);
 	}
 
 	/**
+	 * @param $connectId
 	 * @return bool
 	 * @throws \Throwable
 	 * @throws \yii\db\StaleObjectException

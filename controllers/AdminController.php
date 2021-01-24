@@ -5,9 +5,10 @@ namespace app\controllers;
 
 
 use app\models\Admin;
+use app\models\Connect;
+use app\models\Identity;
 use Yii;
 use yii\base\UserException;
-use yii\web\Cookie;
 
 class AdminController extends RestController
 {
@@ -71,8 +72,17 @@ class AdminController extends RestController
 		if (empty($admin)) {
 			throw new UserException('Login failed');
 		}
+
 		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
-		$adminAttributes['token'] = $admin->generateAccessToken();
+		$accessToken = $admin->generateAccessToken();
+		$adminAttributes['token'] = $accessToken['token'];
+
+		$identity = new Identity();
+		$identity->uuid = $accessToken['uuid'];
+		$identity->token = $accessToken['token'];
+		$identity->admin = $admin;
+		Yii::$app->user->login($identity);
+
 		Yii::$app->token->cookie($adminAttributes['token'], ['httpOnly' => true]);
 		return $this->response($adminAttributes, null, 'Login succeed');
 	}
@@ -83,12 +93,12 @@ class AdminController extends RestController
 	 */
 	public function actionAuth()
 	{
-		$admin = Yii::$app->user->identity;
-		if (empty($admin)) {
+		$identity = Yii::$app->user->identity;
+		if (empty($identity)) {
 			throw new UserException('Get auth info failed');
 		}
-		Yii::$app->token->delay($admin->token);
-		$adminAttributes = $admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
+		Yii::$app->token->delay($identity->token);
+		$adminAttributes = $identity->admin->getAttributes(['uuid', 'type', 'avatar', 'account']);
 		return $this->response($adminAttributes, null, 'Get auth info succeed');
 	}
 
@@ -97,9 +107,9 @@ class AdminController extends RestController
 	 */
 	public function actionLogout()
 	{
-		$admin = Yii::$app->user->identity;
-		if ($admin) {
-			Yii::$app->token->expire($admin->token);
+		$identity = Yii::$app->user->identity;
+		if ($identity) {
+			Yii::$app->token->expire($identity->token);
 		}
 		return $this->response(null, null, 'Logout succeed');
 	}
@@ -124,7 +134,43 @@ class AdminController extends RestController
 	{
 		$request = Yii::$app->request;
 		$type = $request->getQueryParam('type');
-		$authorizeUrl = Admin::getAuthorizeUser($type, Yii::$app->oauth2->getGrantType($type, 'authorization_code'));
-		return $this->response($authorizeUrl, null, 'Logout succeed');
+		$authorizeUser = Admin::getAuthorizeUser($type, Yii::$app->oauth2->getGrantType($type, 'authorization_code'));
+		$connect = Yii::$app->user->identity->admin->bindConnect($authorizeUser);
+		return $this->redirect(Yii::$app->app->setting('hostDomain') . '/admin/authorize?union_id=' . $connect->union_id);
+	}
+
+	/**
+	 * @return array
+	 * @throws UserException
+	 * @throws \yii\base\Exception
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionProfile()
+	{
+		$request = Yii::$app->request;
+		if ($request->isGet) {
+			$admin = Admin::findOneById($request->getQueryParam('id'), ['uuid', 'avatar', 'account', 'status']);
+			return $this->response($admin);
+		} else {
+			$admin = Admin::edit($request->getBodyParams());
+			return $this->response($admin);
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function actionConnects()
+	{
+		$request = Yii::$app->request;
+		$admin = Admin::findOneById($request->getQueryParam('id'));
+		$connects = $admin->connect;
+		return $this->response($connects);
+	}
+
+	public function actionAdminConnect()
+	{
+		$connect = Connect::find()->select(['type', 'avatar', 'account'])->where(['union_id' => Yii::$app->request->getQueryParam('union_id')])->limit(1)->one();
+		return $this->response($connect);
 	}
 }

@@ -4,6 +4,9 @@
 namespace app\components\oauth2;
 
 
+use app\components\oauth2\gateway\Alipay;
+use app\components\oauth2\gateway\AuthorizeUser;
+
 class Oauth2Component extends \yii\base\Component
 {
 	/**
@@ -17,7 +20,7 @@ class Oauth2Component extends \yii\base\Component
 		/**
 		 * @var $gateway Alipay
 		 */
-		$gateway = \Yii::createObject(__NAMESPACE__ . '\\' . ucfirst($type));
+		$gateway = \Yii::createObject(__NAMESPACE__ . '\\gateway\\' . ucfirst($type));
 		return $gateway->getScope($scope);
 	}
 
@@ -32,7 +35,7 @@ class Oauth2Component extends \yii\base\Component
 		/**
 		 * @var $gateway Alipay
 		 */
-		$gateway = \Yii::createObject(__NAMESPACE__ . '\\' . ucfirst($type));
+		$gateway = \Yii::createObject(__NAMESPACE__ . '\\gateway\\' . ucfirst($type));
 		return $gateway->getGrantType($grantType);
 	}
 
@@ -49,7 +52,7 @@ class Oauth2Component extends \yii\base\Component
 		/**
 		 * @var $gateway Alipay
 		 */
-		$gateway = \Yii::createObject(__NAMESPACE__ . '\\' . ucfirst($type));
+		$gateway = \Yii::createObject(__NAMESPACE__ . '\\gateway\\' . ucfirst($type));
 		return $gateway->getAuthorizeUrl($scope, $redirect, $state);
 	}
 
@@ -64,7 +67,7 @@ class Oauth2Component extends \yii\base\Component
 		/**
 		 * @var $gateway Alipay
 		 */
-		$gateway = \Yii::createObject(__NAMESPACE__ . '\\' . ucfirst($type));
+		$gateway = \Yii::createObject(__NAMESPACE__ . '\\gateway\\' . ucfirst($type));
 		return $gateway->getUserInfo($grantType);
 	}
 }

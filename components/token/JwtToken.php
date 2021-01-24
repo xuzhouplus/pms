@@ -9,7 +9,7 @@ use Exception;
 use Faker\Provider\Uuid;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
-use Lcobucci\JWT\Signer\Key;
+use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Yii;
 use yii\base\UserException;
@@ -23,21 +23,21 @@ class JwtToken extends BaseToken
 
 	public function init()
 	{
-		$secret = Yii::$app->app->setting(SiteSetting::SETTING_KEY_ENCRYPT_SECRET);
-		$this->configuration = Configuration::forSymmetricSigner(new Sha256(), new Key($secret));
+		$security = Yii::$app->params['security'];
+		$this->configuration = Configuration::forSymmetricSigner(new Sha256(), InMemory::plainText($security['encryptSecret']));
 		$this->duration = Yii::$app->app->setting(SiteSetting::SETTING_KEY_LOGIN_DURATION);
 		$this->issuedBy = Yii::$app->app->setting(SiteSetting::SETTING_KEY_TITLE);
 	}
 
 	/**
 	 * @param $data
-	 * @return string
+	 * @return array
 	 * @throws Exception
 	 */
 	public function encode($data)
 	{
 		$uuid = Uuid::uuid();
-		$builder = $this->configuration->createBuilder();
+		$builder = $this->configuration->builder();
 		$builder->identifiedBy($uuid);
 		$builder->issuedBy($this->issuedBy);
 		$builder->permittedFor($this->issuedBy);
@@ -64,7 +64,7 @@ class JwtToken extends BaseToken
 		$token = $builder->getToken($this->configuration->getSigner(), $this->configuration->getSigningKey());
 		$tokenString = $token->toString();
 		Yii::$app->cache->set(JwtToken::JWT_TOKEN_CACHE_KEY . $uuid, $data, $duration);
-		return $tokenString;
+		return ['uuid' => $uuid, 'token' => $tokenString];
 	}
 
 	/**
@@ -75,7 +75,7 @@ class JwtToken extends BaseToken
 	public function decode($token)
 	{
 		$now = new \DateTimeImmutable();
-		$parser = $this->configuration->getParser()->parse($token);
+		$parser = $this->configuration->parser()->parse($token);
 		if ($parser->isExpired($now)) {
 			throw new UserException('The token is expired');
 		}
@@ -89,6 +89,7 @@ class JwtToken extends BaseToken
 				throw new UserException('The token is unavailable');
 			}
 		}
+		$claims['uuid'] = $claims[RegisteredClaims::ID];
 		return $claims;
 	}
 

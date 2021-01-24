@@ -1,11 +1,12 @@
 <?php
 
 
-namespace app\components\oauth2;
+namespace app\components\oauth2\gateway;
 
 
 use app\models\AlipaySetting;
 use app\models\Connect;
+use app\models\SettingModel;
 use tinymeng\OAuth2\OAuth;
 use yii\helpers\ArrayHelper;
 
@@ -24,10 +25,9 @@ class Alipay extends Gateway
 
 	public function init()
 	{
-		$this->appId = \Yii::$app->app->setting(AlipaySetting::SETTING_KEY_APPID);
-		$this->appPrimaryKey = \Yii::$app->app->setting(AlipaySetting::SETTING_KEY_APP_PRIMARY_KEY);
-		$this->alipayPublicKey = \Yii::$app->app->setting(AlipaySetting::SETTING_KEY_ALIPAY_PUBLIC_KAY);
-
+		$this->appId = \Yii::$app->app->setting(AlipaySetting::SETTING_KEY_APP_ID);
+		$this->appPrimaryKey = SettingModel::decrypt(\Yii::$app->app->setting(AlipaySetting::SETTING_KEY_APP_PRIMARY_KEY), 'yii');
+		$this->alipayPublicKey = SettingModel::decrypt(\Yii::$app->app->setting(AlipaySetting::SETTING_KEY_ALIPAY_PUBLIC_KAY), 'yii');
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Alipay extends Gateway
 			'authorization_code' => self::GRANT_TYPE_AUTHORIZATION_CODE,
 			'refresh_token' => self::GRANT_TYPE_REFRESH_TOKEN,
 		];
-		return ArrayHelper::getValue($grantTypes, $grantTypes);
+		return ArrayHelper::getValue($grantTypes, $grantType);
 	}
 
 	/**
@@ -75,6 +75,7 @@ class Alipay extends Gateway
 			throw new \Exception('scope参数错误');
 		}
 		$gateway = OAuth::Alipay([
+			'is_sandbox' => true,
 			'app_id' => $this->appId,
 			'pem_private' => $this->appPrimaryKey,
 			'pem_public' => $this->alipayPublicKey,
@@ -94,12 +95,13 @@ class Alipay extends Gateway
 	public function getUserInfo($grantType): AuthorizeUser
 	{
 		$gateway = OAuth::Alipay([
+			'is_sandbox' => true,
 			'app_id' => $this->appId,
 			'pem_private' => $this->appPrimaryKey,
 			'pem_public' => $this->alipayPublicKey,
 			'grant_type' => $grantType,
 		]);
-		$userInfo = $gateway->userInfo();
+		$userInfo = $gateway->getUserInfo();
 		$authorizeUser = new AuthorizeUser($userInfo);
 		$authorizeUser->type = Connect::CONNECT_TYPE_ALIPAY;
 		return $authorizeUser;

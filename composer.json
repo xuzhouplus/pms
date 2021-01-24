@@ -1,7 +1,12 @@
 {
     "name": "yiisoft/yii2-app-basic",
     "description": "Yii 2 Basic Project Template",
-    "keywords": ["yii2", "framework", "basic", "project template"],
+    "keywords": [
+        "yii2",
+        "framework",
+        "basic",
+        "project template"
+    ],
     "homepage": "http://www.yiiframework.com/",
     "type": "project",
     "license": "BSD-3-Clause",
@@ -19,11 +24,11 @@
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
         "yiisoft/yii2-redis": "~2.0.0",
-		"ext-gd": "*",
+        "ext-gd": "*",
         "endroid/qr-code": "^3.0@dev",
         "lcobucci/jwt": "^4.0@dev",
-        "tinymeng/oauth": "^1.0.0"
-	},
+        "tinymeng/oauth": "^2.0.0"
+    },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
         "yiisoft/yii2-gii": "~2.1.0",

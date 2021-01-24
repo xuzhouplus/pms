@@ -54,8 +54,8 @@ class ConsoleApplication extends yii\console\Application
  * User component
  * Include only Web application related components here
  *
- * @property \app\models\Admin $identity User model.
- * @method \app\models\Admin getIdentity() returns User model.
+ * @property \app\models\Identity $identity User model.
+ * @method \app\models\Identity getIdentity() returns User model.
  */
 class User extends \yii\web\User
 {

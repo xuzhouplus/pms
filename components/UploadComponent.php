@@ -101,4 +101,48 @@ class UploadComponent extends \yii\base\Component
 		$uploadedFile->saveAs($absolutePath);
 		return $uploadedFile;
 	}
+
+	/**
+	 * @param $base64
+	 * @param $saveAs
+	 * @return string
+	 */
+	public function saveBase64($base64, $saveAs)
+	{
+		$explodes = explode(';base64,', $base64);
+		$someContent = base64_decode(end($explodes));
+		$imageType = reset($explodes);
+		$imageTypeExplodes = explode('/', $imageType);
+		$absolutePath = $this->path . $saveAs . '.' . end($imageTypeExplodes);
+		$absoluteDir = dirname($absolutePath);
+		if (!is_dir($absoluteDir)) {
+			mkdir($absoluteDir, 0777, true);
+		}
+		file_put_contents($absolutePath, $someContent);
+		return $absolutePath;
+	}
+
+	public function getPath($filePath)
+	{
+		return str_replace('\\', DIRECTORY_SEPARATOR, $this->path . $filePath);
+	}
+
+	public function getUrl($filePath)
+	{
+		return str_replace(DIRECTORY_SEPARATOR, '/', $this->host . $filePath);
+	}
+
+	public function pathToUrl($filePath)
+	{
+		$filePath = str_replace('\\', DIRECTORY_SEPARATOR, $filePath);
+		$fileUrl = str_replace($this->path, $this->host, $filePath);
+		return str_replace(DIRECTORY_SEPARATOR, '/', $fileUrl);
+	}
+
+	public function urlToPath($fileUrl)
+	{
+		$fileUrl = str_replace(DIRECTORY_SEPARATOR, '/', $fileUrl);
+		$filePath = str_replace($this->host, $this->path, $fileUrl);
+		return str_replace('/', DIRECTORY_SEPARATOR, $filePath);
+	}
 }

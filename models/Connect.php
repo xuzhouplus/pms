@@ -13,7 +13,7 @@ use Yii;
  * @property string $type 对接类型，wechat微信，weibo微博，qq QQ
  * @property string $avatar 头像
  * @property string $account 账号
- * @property string $open_id 三方授权唯一标识，微信、QQ为OpenID，微博为uid
+ * @property string $union_id 三方授权唯一标识
  * @property integer $status 状态，1启用，2禁用
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
@@ -24,6 +24,11 @@ class Connect extends \yii\db\ActiveRecord
 	const CONNECT_TYPE_WECHAT = 'wechat';
 	const CONNECT_TYPE_WEIBO = 'weibo';
 	const CONNECT_TYPE_QQ = 'qq';
+	const CONNECT_TYPE_GITHUB = 'github';
+	const CONNECT_TYPE_FACEBOOK = 'facebook';
+	const CONNECT_TYPE_LINE = 'line';
+	const CONNECT_TYPE_GOOGLE = 'google';
+	const CONNECT_TYPE_TWITTER = 'twitter';
 
 	/**
 	 * {@inheritdoc}
@@ -39,7 +44,7 @@ class Connect extends \yii\db\ActiveRecord
 	public function rules()
 	{
 		return [
-			[['admin_id', 'avatar', 'account', 'open_id'], 'required'],
+			[['admin_id', 'avatar', 'account', 'union_id'], 'required'],
 			[['admin_id', 'status'], 'integer'],
 			[['created_at', 'updated_at'], 'safe'],
 			[['type'], 'string', 'max' => 32],
@@ -58,7 +63,7 @@ class Connect extends \yii\db\ActiveRecord
 			'type' => '对接类型，wechat微信，weibo微博，qq QQ',
 			'avatar' => '头像',
 			'account' => '账号',
-			'open_id' => '三方授权唯一标识，微信、QQ为OpenID，微博为uid',
+			'union_id' => '三方授权唯一标识',
 			'status' => '状态，1启用，2禁用',
 			'created_at' => '创建时间',
 			'updated_at' => '更新时间',

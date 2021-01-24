@@ -33,7 +33,7 @@ $config = [
         ],
         'user' => [
             'class' => 'yii\web\User',
-            'identityClass' => 'app\models\Admin',
+            'identityClass' => 'app\models\Identity',
             'enableAutoLogin' => false,
             'enableSession' => false
         ],
@@ -53,7 +53,7 @@ $config = [
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'levels' => ['error', 'warning', 'info', 'trace'],
+                    'levels' => ['error', 'warning'],
                 ],
             ],
         ],
@@ -63,6 +63,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+	            'GET admin/connect/<type:\w+>' => 'admin/connect',
             ],
         ],
         'app' => 'app\components\AppComponent',

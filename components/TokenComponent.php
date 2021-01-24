@@ -27,12 +27,20 @@ class TokenComponent extends \yii\base\Component
 		$this->handler = \Yii::createObject($tokenClass);
 	}
 
-	public function encode($data)
+	/**
+	 * @param $data
+	 * @return array
+	 */
+	public function encode($data): array
 	{
 		return $this->handler->encode($data);
 	}
 
-	public function decode($token)
+	/**
+	 * @param $token
+	 * @return array
+	 */
+	public function decode($token): array
 	{
 		return $this->handler->decode($token);
 	}

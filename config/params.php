@@ -12,5 +12,12 @@ return [
 		'maxSize' => 1024,
 		'maxFiles' => 10,
 		'mimeTypes' => '*'
-	]
+	],
+	'security' => [
+		'digestAlg' => 'sha256',
+		'privateKeyBits' => 1024,
+		'privateKeyType' => OPENSSL_KEYTYPE_RSA,
+		'encryptSecret' => 'xcvmnbiufs'
+	],
+	'userCacheRsaPrimaryKey' => 'user_rsa_primary_key:',
 ];

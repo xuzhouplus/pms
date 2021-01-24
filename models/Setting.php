@@ -51,7 +51,7 @@ class Setting extends \yii\db\ActiveRecord
 		return [
 			[['key', 'name'], 'required'],
 			[['key'], 'string', 'max' => 32],
-			[['name', 'value', 'options', 'description'], 'string', 'max' => 255],
+			[['name', 'value', 'options', 'description'], 'string'],
 			['type', 'default', 'value' => self::TYPE_INPUT],
 			['type', 'in', 'range' => [self::TYPE_INPUT, self::TYPE_RADIO, self::TYPE_CHECKBOX, self::TYPE_SELECT, self::TYPE_MULTI_SELECT, self::TYPE_TEXTAREA]],
 			['private', 'default', 'value' => self::PRIVATE_SETTING],

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\components\oauth2;
+namespace app\components\oauth2\gateway;
 
 
 abstract class Gateway extends \yii\base\BaseObject

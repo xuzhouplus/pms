@@ -8,16 +8,19 @@ namespace app\models;
  * Class CarouselSetting
  * @package app\models
  */
-class CarouselSetting extends Setting
+class CarouselSetting extends SettingModel
 {
-    const SETTING_KEY_CAROUSEL_TYPE = 'carousel_type';//轮播类型
-    const SETTING_KEY_CAROUSEL_LIMIT = 'carousel_limit';//轮播数量限制
+	const SETTING_KEY_CAROUSEL_TYPE = 'carousel_type';//轮播类型
+	const SETTING_KEY_CAROUSEL_LIMIT = 'carousel_limit';//轮播数量限制
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public static function find()
-    {
-        return parent::find()->where(['key' => [self::SETTING_KEY_CAROUSEL_TYPE, self::SETTING_KEY_CAROUSEL_LIMIT]])->limit(2);
-    }
+	/**
+	 * @return string[]
+	 */
+	public static function types(): array
+	{
+		return [
+			self::SETTING_KEY_CAROUSEL_TYPE,
+			self::SETTING_KEY_CAROUSEL_LIMIT
+		];
+	}
 }
