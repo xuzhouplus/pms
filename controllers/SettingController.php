@@ -5,7 +5,7 @@ namespace app\controllers;
 use app\helpers\Response;
 use app\helpers\RsaHelper;
 use app\models\AlipaySetting;
-use app\models\BaiduPanSetting;
+use app\models\BaiduSetting;
 use app\models\CarouselSetting;
 use app\models\FacebookSetting;
 use app\models\GitHubSetting;
@@ -69,32 +69,32 @@ class SettingController extends RestController
 		}
 	}
 
-	public function actionBaiduPan()
+    public function actionSite()
+    {
+        $request = Yii::$app->request;
+        if ($request->isGet) {
+            $settings = SiteSetting::find('key');
+            return $this->response($settings);
+        } else {
+            SiteSetting::save($request->getBodyParams());
+            return $this->response();
+        }
+    }
+
+	public function actionBaidu()
 	{
 		$request = Yii::$app->request;
 		if ($request->isGet) {
-			$settings = BaiduPanSetting::find();
+			$settings = BaiduSetting::find();
 			$settingPairs = ArrayHelper::map($settings, 'key', 'value');
 			return $this->response($settingPairs);
 		} else {
 			$requestData = $request->getBodyParams();
-			if (!empty($requestData[BaiduPanSetting::SETTING_KEY_APP_SECRET])) {
-				$requestData[BaiduPanSetting::SETTING_KEY_APP_SECRET] = BaiduPanSetting::decrypt($requestData[BaiduPanSetting::SETTING_KEY_APP_SECRET]);
-				$requestData[BaiduPanSetting::SETTING_KEY_APP_SECRET] = BaiduPanSetting::encrypt($requestData[BaiduPanSetting::SETTING_KEY_APP_SECRET]);
+			if (!empty($requestData[BaiduSetting::SETTING_KEY_SECRET_KEY])) {
+				$requestData[BaiduSetting::SETTING_KEY_SECRET_KEY] = BaiduSetting::decrypt($requestData[BaiduSetting::SETTING_KEY_SECRET_KEY]);
+				$requestData[BaiduSetting::SETTING_KEY_SECRET_KEY] = BaiduSetting::encrypt($requestData[BaiduSetting::SETTING_KEY_SECRET_KEY]);
 			}
-			BaiduPanSetting::save($requestData);
-			return $this->response();
-		}
-	}
-
-	public function actionSite()
-	{
-		$request = Yii::$app->request;
-		if ($request->isGet) {
-			$settings = SiteSetting::find('key');
-			return $this->response($settings);
-		} else {
-			SiteSetting::save($request->getBodyParams());
+			BaiduSetting::save($requestData);
 			return $this->response();
 		}
 	}

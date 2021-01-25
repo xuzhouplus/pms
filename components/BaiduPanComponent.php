@@ -4,7 +4,7 @@
 namespace app\components;
 
 
-use app\models\BaiduPanSetting;
+use app\models\BaiduSetting;
 use Yii;
 use yii\base\Component;
 
@@ -15,8 +15,8 @@ class BaiduPanComponent extends Component
 
 	public function init()
 	{
-		$this->appKey = Yii::$app->app->setting(BaiduPanSetting::SETTING_KEY_APP_KEY);
-		$this->appSecret = Yii::$app->app->setting(BaiduPanSetting::SETTING_KEY_APP_SECRET);
+		$this->appKey = Yii::$app->app->setting(BaiduSetting::SETTING_KEY_APP_KEY);
+		$this->appSecret = Yii::$app->app->setting(BaiduSetting::SETTING_KEY_APP_SECRET);
 	}
 
 	public function authorize()

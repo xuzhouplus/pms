@@ -38,16 +38,16 @@ class m210123_034704_insert_settings extends Migration
 			    'options' => ''
 		    ],
 		    [
-			    'key' => 'baidu_pan_app_key',
-			    'name' => '百度网盘APP_KEY',
+			    'key' => 'baidu_api_key',
+			    'name' => '百度网盘ApiKey',
 			    'type' => \app\models\Setting::TYPE_TEXTAREA,
 			    'private' => \app\models\Setting::PRIVATE_SETTING,
 			    'value' => '',
 			    'options' => ''
 		    ],
 		    [
-			    'key' => 'baidu_pan_app_secret',
-			    'name' => '百度网盘APP_SECRET',
+			    'key' => 'baidu_secret_key',
+			    'name' => '百度网盘SecretKey',
 			    'type' => \app\models\Setting::TYPE_TEXTAREA,
 			    'private' => \app\models\Setting::PRIVATE_SETTING,
 			    'value' => '',

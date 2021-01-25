@@ -52,7 +52,8 @@ class Twitter extends Gateway
 	{
 		$gateway = OAuth::Twitter([
 			'app_id' => $this->appId,
-			'app_secret' => $this->appSecret
+			'app_secret' => $this->appSecret,
+			'grant_type' => $grantType
 		]);
 		$userInfo = $gateway->userInfo();
 		$authorizeUser = new AuthorizeUser($userInfo);

@@ -50,11 +50,12 @@ class Google extends Gateway
 		return $gateway->getRedirectUrl();
 	}
 
-	public function getUserInfo($grantType = null): AuthorizeUser
+	public function getUserInfo($grantType): AuthorizeUser
 	{
 		$gateway = OAuth::Google([
 			'app_id' => $this->appId,
-			'app_secret' => $this->appSecret
+			'app_secret' => $this->appSecret,
+			'grant_type' => $grantType
 		]);
 		$userInfo = $gateway->userInfo();
 		$authorizeUser = new AuthorizeUser($userInfo);

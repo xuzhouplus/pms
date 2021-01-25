@@ -63,7 +63,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-	            'GET admin/connect/<type:\w+>' => 'admin/connect',
+                'GET admin/connect/<type:\w+>' => 'admin/connect',
             ],
         ],
         'app' => 'app\components\AppComponent',
@@ -80,9 +80,9 @@ $config = [
         'image' => [
             'class' => 'app\components\ImageComponent'
         ],
-	    'oauth2'=>[
-	    	'class'=>'app\components\oauth2\Oauth2Component'
-	    ]
+        'oauth2' => [
+            'class' => 'app\components\oauth2\Oauth2Component'
+        ]
     ],
     'modules' => [
     ],
