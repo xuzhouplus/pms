@@ -4,12 +4,12 @@ namespace app\models;
 
 use app\components\oauth2\AuthorizeUser;
 use app\helpers\RsaHelper;
+use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
-use yii\db\Expression;
 
 /**
  * This is the model class for table "{{%admins}}".
@@ -57,7 +57,7 @@ class Admin extends \yii\db\ActiveRecord
 					ActiveRecord::EVENT_BEFORE_INSERT => 'uuid'
 				],
 				'value' => function ($event) {
-					return str_replace('-', '', Uuid::uuid());
+					return str_replace('-', '', Uuid::uuid4()->toString());
 				}
 			]
 		];

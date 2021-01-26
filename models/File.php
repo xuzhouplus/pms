@@ -2,14 +2,10 @@
 
 namespace app\models;
 
-use app\helpers\ImageHelper;
-use Faker\Provider\Uuid;
+use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
 use yii\data\ActiveDataProvider;
-use yii\helpers\ArrayHelper;
-use yii\web\Request;
-use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "{{%files}}".
@@ -118,7 +114,7 @@ class File extends \yii\db\ActiveRecord
 	{
 		if ($this->validate()) {
 			$directory = date('Y/m/d');
-			$uploadRelativePath = DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . str_replace('-', '', Uuid::uuid());
+			$uploadRelativePath = DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . str_replace('-', '', Uuid::uuid4()->toString());
 			$uploadedFile = Yii::$app->upload->save(null, 'file', $uploadRelativePath, true);
 			$this->path = $uploadRelativePath . '.' . $uploadedFile->getExtension();
 			$this->preview = $this->makePreview();

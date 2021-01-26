@@ -5,7 +5,7 @@ namespace app\components\token;
 
 
 use app\models\SiteSetting;
-use Faker\Provider\Uuid;
+use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
 
@@ -37,7 +37,7 @@ class CacheToken extends BaseToken
 			$duration = $expireAt->getTimestamp() - $now->getTimestamp();
 		}
 		unset($data['expiresAt']);
-		$uuid = Uuid::uuid();
+		$uuid = Uuid::uuid4()->toString();
 		$data['uuid'] = $uuid;
 		Yii::$app->cache->set(CacheToken::CACHE_TOKEN_CACHE_KEY . $uuid, $data, $duration);
 		$tokenString = base64_encode(Yii::$app->security->encryptByKey($uuid, $this->secret));

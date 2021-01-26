@@ -3,7 +3,7 @@
 namespace app\models;
 
 use Exception;
-use Faker\Provider\Uuid;
+use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
@@ -54,7 +54,7 @@ class Carousel extends \yii\db\ActiveRecord
                     ActiveRecord::EVENT_BEFORE_INSERT => 'uuid'
                 ],
                 'value' => function ($event) {
-                    return str_replace('-', '', Uuid::uuid());
+                    return str_replace('-', '', Uuid::uuid4()->toString());
                 }
             ]
         ];

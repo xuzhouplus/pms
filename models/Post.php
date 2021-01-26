@@ -2,8 +2,7 @@
 
 namespace app\models;
 
-use Faker\Provider\Uuid;
-use Yii;
+use Ramsey\Uuid\Uuid;
 use yii\base\UserException;
 use yii\behaviors\AttributeBehavior;
 use yii\data\ActiveDataProvider;
@@ -46,7 +45,7 @@ class Post extends \yii\db\ActiveRecord
                     ActiveRecord::EVENT_BEFORE_INSERT => 'uuid'
                 ],
                 'value' => function ($event) {
-                    return str_replace('-', '', Uuid::uuid());
+                    return str_replace('-', '', Uuid::uuid4()->toString());
                 }
             ],
             'time' => [

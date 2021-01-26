@@ -18,6 +18,7 @@ use yii\helpers\ArrayHelper;
  * @property integer $private 是否私有，1是，2否
  * @property string $value 配置值
  * @property string $options 配置选项
+ * @property integer $required 是否必填，1是，2否
  * @property string $description 配置说明
  */
 class Setting extends \yii\db\ActiveRecord
@@ -34,6 +35,11 @@ class Setting extends \yii\db\ActiveRecord
 	const PRIVATE_SETTING = 1;
 	//公开
 	const PUBLIC_SETTING = 2;
+
+	//必填
+	const REQUIRED_SETTING = 1;
+	//可选
+	const OPTIONAL_SETTING = 2;
 
 	/**
 	 * {@inheritdoc}
@@ -56,6 +62,11 @@ class Setting extends \yii\db\ActiveRecord
 			['type', 'in', 'range' => [self::TYPE_INPUT, self::TYPE_RADIO, self::TYPE_CHECKBOX, self::TYPE_SELECT, self::TYPE_MULTI_SELECT, self::TYPE_TEXTAREA]],
 			['private', 'default', 'value' => self::PRIVATE_SETTING],
 			['private', 'in', 'range' => [self::PRIVATE_SETTING, self::PUBLIC_SETTING]],
+			['required', 'default', 'value' => self::REQUIRED_SETTING],
+			['required', 'in', 'range' => [self::REQUIRED_SETTING, self::OPTIONAL_SETTING]],
+			['value', 'required', 'when' => function ($model, $attribute) {
+				return $model->required == self::REQUIRED_SETTING;
+			}],
 			[['key'], 'unique'],
 			[['name'], 'unique'],
 		];

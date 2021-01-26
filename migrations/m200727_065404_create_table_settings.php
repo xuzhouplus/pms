@@ -22,10 +22,11 @@ class m200727_065404_create_table_settings extends Migration
 			'id' => $this->primaryKey(11),
 			'key' => $this->string(32)->notNull()->unique()->comment('配置标识'),
 			'name' => $this->string(255)->notNull()->unique()->comment('配置名称'),
-			'type' => $this->string(10)->notNull()->defaultValue('input')->comment('配置类型，input输入框，radio单选框，checkbox复选框，select下拉选择，multiSelect多选下拉选择，textarea文本域'),
+			'type' => $this->string(20)->notNull()->defaultValue('input')->comment('配置类型，input输入框，radio单选框，checkbox复选框，select下拉选择，multiSelect多选下拉选择，textarea文本域'),
 			'private' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('是否私有，1是，2否'),
 			'value' => $this->text()->comment('配置值'),
 			'options' => $this->string(255)->comment('配置选项'),
+			'required' => $this->tinyInteger(1)->notNull()->defaultValue(1)->comment('是否必填，1是，2否'),
 			'description' => $this->string(255)->comment('配置说明')
 		], $tableOptions);
 
@@ -59,10 +60,10 @@ class m200727_065404_create_table_settings extends Migration
 				'name' => '维护状态',
 				'type' => \app\models\Setting::TYPE_RADIO,
 				'private' => \app\models\Setting::PUBLIC_SETTING,
-				'value' => \app\models\Setting::MAINTAIN_FALSE,
+				'value' => \app\models\SiteSetting::MAINTAIN_FALSE,
 				'options' => json_encode([
-					\app\models\Setting::MAINTAIN_FALSE => '否',
-					\app\models\Setting::MAINTAIN_TRUE => '是',
+					\app\models\SiteSetting::MAINTAIN_FALSE => '否',
+					\app\models\SiteSetting::MAINTAIN_TRUE => '是',
 				])
 			],
 			[

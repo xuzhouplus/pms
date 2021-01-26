@@ -6,11 +6,11 @@ namespace app\components\token;
 
 use app\models\SiteSetting;
 use Exception;
-use Faker\Provider\Uuid;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\RegisteredClaims;
+use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
 
@@ -36,7 +36,7 @@ class JwtToken extends BaseToken
 	 */
 	public function encode($data)
 	{
-		$uuid = Uuid::uuid();
+		$uuid = Uuid::uuid4()->toString();
 		$builder = $this->configuration->builder();
 		$builder->identifiedBy($uuid);
 		$builder->issuedBy($this->issuedBy);
