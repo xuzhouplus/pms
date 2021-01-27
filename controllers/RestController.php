@@ -18,6 +18,7 @@ use yii\rest\ActiveController;
 use yii\rest\OptionsAction;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\UnauthorizedHttpException;
 
 class RestController extends ActiveController
 {
@@ -159,6 +160,9 @@ class RestController extends ActiveController
 		if ($exception instanceof UserException) {
 			Yii::$app->response->setStatusCode(400);
 		}
+        if ($exception instanceof UnauthorizedHttpException) {
+            Yii::$app->response->setStatusCode(401);
+        }
 		return $errorhandler->convertExceptionToArray($exception);
 	}
 }

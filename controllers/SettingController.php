@@ -259,7 +259,7 @@ class SettingController extends RestController
 		if ($request->isGet) {
 			$settings = WeiboSetting::find();
 			$keyPairs = ArrayHelper::map($settings, 'key', 'value');
-			$keyPairs[WeiboSetting::SETTING_KEY_WEIBO_APP_SECRET] = $keyPairs[WeiboSetting::SETTING_KEY_APP_PRIMARY_KEY] ? true : "";
+			$keyPairs[WeiboSetting::SETTING_KEY_WEIBO_APP_SECRET] = $keyPairs[WeiboSetting::SETTING_KEY_WEIBO_APP_SECRET] ? true : "";
 			return $this->response($keyPairs);
 		} else {
 			$requestData = $request->getBodyParams();
