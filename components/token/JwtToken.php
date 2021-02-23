@@ -13,6 +13,7 @@ use Lcobucci\JWT\Token\RegisteredClaims;
 use Ramsey\Uuid\Uuid;
 use Yii;
 use yii\base\UserException;
+use yii\web\UnauthorizedHttpException;
 
 class JwtToken extends BaseToken
 {
@@ -77,16 +78,16 @@ class JwtToken extends BaseToken
 		$now = new \DateTimeImmutable();
 		$parser = $this->configuration->parser()->parse($token);
 		if ($parser->isExpired($now)) {
-			throw new UserException('The token is expired');
+			throw new UnauthorizedHttpException('The token is expired');
 		}
 		$claims = $parser->claims()->all();
 		if (empty($claims)) {
-			throw new UserException('The token is incorrect');
+			throw new UnauthorizedHttpException('The token is incorrect');
 		}
 		if (isset($claims[RegisteredClaims::ID])) {
 			$cache = Yii::$app->cache->get(JwtToken::JWT_TOKEN_CACHE_KEY . $claims[RegisteredClaims::ID]);
 			if (empty($cache)) {
-				throw new UserException('The token is unavailable');
+				throw new UnauthorizedHttpException('The token is unavailable');
 			}
 		}
 		$claims['uuid'] = $claims[RegisteredClaims::ID];
@@ -97,7 +98,7 @@ class JwtToken extends BaseToken
 	{
 		$claims = $this->decode($token);
 		if (empty($claims)) {
-			throw new UserException('The token is incorrect');
+			throw new UnauthorizedHttpException('The token is incorrect');
 		}
 		if (isset($claims[RegisteredClaims::ID])) {
 			Yii::$app->cache->delete(JwtToken::JWT_TOKEN_CACHE_KEY . $claims[RegisteredClaims::ID]);
@@ -108,7 +109,7 @@ class JwtToken extends BaseToken
 	{
 		$claims = $this->decode($token);
 		if (empty($claims)) {
-			throw new UserException('The token is incorrect');
+			throw new UnauthorizedHttpException('The token is incorrect');
 		}
 		if (isset($claims[RegisteredClaims::ID])) {
 			Yii::$app->cache->set(JwtToken::JWT_TOKEN_CACHE_KEY . $claims[RegisteredClaims::ID], $claims, $this->duration);

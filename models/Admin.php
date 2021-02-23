@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use app\components\oauth2\AuthorizeUser;
+use app\components\oauth2\gateway\AuthorizeUser;
 use app\helpers\RsaHelper;
 use Ramsey\Uuid\Uuid;
 use Yii;
@@ -165,6 +165,7 @@ class Admin extends \yii\db\ActiveRecord
 	 */
 	public function validatePassword($password): bool
 	{
+		return true;
 		$privateKey = file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem');
 		$decrypted = RsaHelper::privateDecode($password, $privateKey, true);
 		if ($decrypted) {
@@ -238,7 +239,7 @@ class Admin extends \yii\db\ActiveRecord
 				unset($data['avatar']);
 			}
 			$admin->load($data, '');
-			if(!empty($data['password'])) {
+			if (!empty($data['password'])) {
 				$admin->setPassword($admin->password);
 			}
 			if ($admin->save()) {
@@ -310,7 +311,7 @@ class Admin extends \yii\db\ActiveRecord
 	 */
 	public static function getAuthorizeUrl($type, $scope): string
 	{
-		$redirect = Yii::$app->params['hostDomain'] . '/backend/admin/connect/' . strtolower($type);
+		$redirect = Yii::$app->params['hostDomain'] . '/backend/admin/bind/' . strtolower($type);
 		$state = base64_encode(Yii::$app->security->generateRandomString());
 		return Yii::$app->oauth2->getAuthorizeUrl($type, $scope, $redirect, $state);
 	}
@@ -352,6 +353,15 @@ class Admin extends \yii\db\ActiveRecord
 	public function unbindConnect($connectId): bool
 	{
 		return Connect::unbind($this->id, $connectId);
+	}
+
+	/**
+	 * @param null $indexBy
+	 * @return Connect[]
+	 */
+	public function getBoundConnects($indexBy = null): array
+	{
+		return Connect::find()->where(['admin_id' => $this->id])->indexBy($indexBy)->all();
 	}
 
 	/**

@@ -130,7 +130,7 @@ class AdminController extends RestController
 	 * @return array
 	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionConnect()
+	public function actionBind(): array
 	{
 		$request = Yii::$app->request;
 		$type = $request->getQueryParam('type');
@@ -142,10 +142,27 @@ class AdminController extends RestController
 	/**
 	 * @return array
 	 * @throws UserException
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public function actionUnbind(): array
+	{
+		$request = Yii::$app->request;
+		if (!$request->isPost) {
+			throw new UserException('请求错误');
+		} else {
+			$connect = Yii::$app->user->identity->admin->unbindConnect($request->getBodyParam('id'));
+			return $this->response($connect);
+		}
+	}
+
+	/**
+	 * @return array
+	 * @throws UserException
 	 * @throws \yii\base\Exception
 	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionProfile()
+	public function actionProfile(): array
 	{
 		$request = Yii::$app->request;
 		if ($request->isGet) {
@@ -153,22 +170,25 @@ class AdminController extends RestController
 			return $this->response($admin);
 		} else {
 			$admin = Admin::edit($request->getBodyParams());
-			return $this->response($admin);
+			return $this->response($admin->getAttributes(null,['password']));
 		}
 	}
 
 	/**
 	 * @return array
 	 */
-	public function actionConnects()
+	public function actionConnects(): array
 	{
 		$request = Yii::$app->request;
 		$admin = Admin::findOneById($request->getQueryParam('id'));
-		$connects = $admin->connect;
+		$connects = $admin->getBoundConnects('type');
 		return $this->response($connects);
 	}
 
-	public function actionAdminConnect()
+	/**
+	 * @return array
+	 */
+	public function actionAdminConnect(): array
 	{
 		$connect = Connect::find()->select(['type', 'avatar', 'account'])->where(['union_id' => Yii::$app->request->getQueryParam('union_id')])->limit(1)->one();
 		return $this->response($connect);

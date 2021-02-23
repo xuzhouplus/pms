@@ -75,7 +75,6 @@ class Alipay extends Gateway
 			throw new \Exception('scope参数错误');
 		}
 		$gateway = OAuth::Alipay([
-			'is_sandbox' => true,
 			'app_id' => $this->appId,
 			'pem_private' => $this->appPrimaryKey,
 			'pem_public' => $this->alipayPublicKey,
@@ -101,7 +100,7 @@ class Alipay extends Gateway
 			'pem_public' => $this->alipayPublicKey,
 			'grant_type' => $grantType,
 		]);
-		$userInfo = $gateway->getUserInfo();
+		$userInfo = $gateway->userInfo();
 		$authorizeUser = new AuthorizeUser($userInfo);
 		$authorizeUser->type = Connect::CONNECT_TYPE_ALIPAY;
 		return $authorizeUser;
