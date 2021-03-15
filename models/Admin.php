@@ -24,6 +24,7 @@ use yii\db\ActiveRecord;
  * @property integer $status 状态，1启用，2禁用
  * @property string $created_at 创建时间
  * @property string $updated_at 更新时间
+ * @property string $salt salt
  */
 class Admin extends \yii\db\ActiveRecord
 {
@@ -78,7 +79,7 @@ class Admin extends \yii\db\ActiveRecord
 			[['account', 'password'], 'required', 'on' => ['create', 'update']],
 			[['created_at', 'updated_at'], 'safe'],
 			[['avatar', 'account', 'password'], 'string', 'max' => 255],
-			[['uuid'], 'string', 'max' => 32],
+			[['uuid', 'salt'], 'string', 'max' => 32],
 			['account', 'unique']
 		];
 	}
@@ -142,30 +143,12 @@ class Admin extends \yii\db\ActiveRecord
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getRsaPublicKey()
-	{
-		return Yii::$app->security->decryptByKey($this->rsaKey['publicKey'], Yii::$app->app->setting('security.encryptSecret'));
-	}
-
-	/**
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	public function getRsaPrivateKey()
-	{
-		return Yii::$app->security->decryptByKey($this->rsaKey['privateKey'], Yii::$app->app->setting('security.encryptSecret'));;
-	}
-
-	/**
 	 * @param $password
 	 * @return bool
 	 * @throws UserException
 	 */
 	public function validatePassword($password): bool
 	{
-		return true;
 		$privateKey = file_get_contents(Yii::$aliases['@app'] . '/rsa_1024_priv.pem');
 		$decrypted = RsaHelper::privateDecode($password, $privateKey, true);
 		if ($decrypted) {
@@ -173,7 +156,7 @@ class Admin extends \yii\db\ActiveRecord
 		} else {
 			throw new UserException('Password is incredible');
 		}
-		return Yii::$app->security->validatePassword($password, $this->password);
+		return md5($this->salt . $password) == $this->password;
 	}
 
 	/**
@@ -182,7 +165,8 @@ class Admin extends \yii\db\ActiveRecord
 	 */
 	public function setPassword($password)
 	{
-		$this->password = Yii::$app->getSecurity()->generatePasswordHash($password);
+		$this->salt = str_replace('-', '', Uuid::uuid4()->toString());
+		$this->password = md5($this->salt . $password);
 	}
 
 	/**

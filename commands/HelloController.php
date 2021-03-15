@@ -7,6 +7,8 @@
 
 namespace app\commands;
 
+use app\models\Carousel;
+use app\models\File;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
@@ -30,5 +32,30 @@ class HelloController extends Controller
         echo $message . "\n";
 
         return ExitCode::OK;
+    }
+
+    public function actionFix()
+    {
+        $name = [
+            'bipenggou' => '毕棚沟',
+            'dujiangyan' => '都江堰',
+            'jianmenguan' => '剑门关',
+            'langzhonggucheng' => '阆中古城',
+            'emeishan' => '峨眉山',
+            'huashan' => '华山',
+            'uestc' => '电子科技大学',
+            'yiheyuan' => '颐和园',
+        ];
+        /**
+         * @var $file File
+         */
+        foreach (File::find()->each() as $file) {
+            $file->description = $name[$file->name];
+            $file->save();
+            $carousel = Carousel::find()->where(['file_id' => $file->id])->limit(1)->one();
+            $carousel->title = $file->description;
+            $carousel->description = $file->description;
+            $carousel->save();
+        }
     }
 }
