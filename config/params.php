@@ -20,4 +20,7 @@ return [
 		'encryptSecret' => 'xcvmnbiufs'
 	],
 	'userCacheRsaPrimaryKey' => 'user_rsa_primary_key:',
+	'connects' => [
+		'alipay', 'baidu', 'github', 'qq', 'wechat', 'weibo', 'facebook', 'twitter', 'line', 'google'
+	]
 ];

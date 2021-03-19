@@ -13,6 +13,7 @@ use yii\base\InvalidConfigException;
 use yii\base\UserException;
 use yii\filters\auth\CompositeAuth;
 use yii\filters\auth\HttpBearerAuth;
+use yii\filters\Cors;
 use yii\rest\Action;
 use yii\rest\ActiveController;
 use yii\rest\OptionsAction;
@@ -61,6 +62,11 @@ class RestController extends ActiveController
 			'optional' => $this->optional,
 			'except' => array_merge($this->except, ['error'])
 		];
+		if (YII_ENV_DEV && YII_DEBUG) {
+			$behaviors['cors'] = [
+				'class' => Cors::class
+			];
+		}
 
 		return $behaviors;
 	}
@@ -160,9 +166,9 @@ class RestController extends ActiveController
 		if ($exception instanceof UserException) {
 			Yii::$app->response->setStatusCode(400);
 		}
-        if ($exception instanceof UnauthorizedHttpException) {
-            Yii::$app->response->setStatusCode(401);
-        }
+		if ($exception instanceof UnauthorizedHttpException) {
+			Yii::$app->response->setStatusCode(401);
+		}
 		return $errorhandler->convertExceptionToArray($exception);
 	}
 }

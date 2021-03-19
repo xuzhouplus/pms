@@ -36,7 +36,9 @@ class SettingController extends RestController
 	public function actionIndex()
 	{
 		$settings = Setting::getPublicSettings();
-		return $this->response(ArrayHelper::map($settings, 'key', 'value'));
+		$result = ArrayHelper::map($settings, 'key', 'value');
+		$result['connects'] = Yii::$app->params['connects'];
+		return $this->response($result);
 	}
 
 	public function actionAdd()
@@ -69,17 +71,17 @@ class SettingController extends RestController
 		}
 	}
 
-    public function actionSite()
-    {
-        $request = Yii::$app->request;
-        if ($request->isGet) {
-            $settings = SiteSetting::find('key');
-            return $this->response($settings);
-        } else {
-            SiteSetting::save($request->getBodyParams());
-            return $this->response();
-        }
-    }
+	public function actionSite()
+	{
+		$request = Yii::$app->request;
+		if ($request->isGet) {
+			$settings = SiteSetting::find('key');
+			return $this->response($settings);
+		} else {
+			SiteSetting::save($request->getBodyParams());
+			return $this->response();
+		}
+	}
 
 	public function actionBaidu()
 	{
